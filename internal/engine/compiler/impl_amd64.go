@@ -4675,7 +4675,7 @@ func (c *amd64Compiler) compileReleaseRegisterToStack(loc *runtimeValueLocation)
 }
 
 func (c *amd64Compiler) compileExitFromNativeCode(status nativeCallStatusCode) {
-	c.assembler.CompileConstToMemory(amd64.MOVB, int64(status), amd64ReservedRegisterForCallEngine, callEngineExitContextnativeCallStatusCodeOffset)
+	c.assembler.CompileConstToMemory(amd64.MOVB, int64(status), amd64ReservedRegisterForCallEngine, callEngineExitContextNativeCallStatusCodeOffset)
 
 	// Write back the cached SP to the actual eng.stackPointer.
 	c.assembler.CompileConstToMemory(amd64.MOVQ, int64(c.locationStack.sp), amd64ReservedRegisterForCallEngine, callEngineValueStackContextStackPointerOffset)

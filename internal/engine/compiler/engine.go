@@ -148,14 +148,14 @@ type (
 		// Where we store the status code of Compiler execution.
 		statusCode nativeCallStatusCode
 
-		// Set when statusCode == compilerStatusCallBuiltInFunction}
+		// Set when statusCode == compilerStatusCallBuiltInFunction
 		// Indicating the function call index.
 		builtinFunctionCallIndex wasm.Index
 	}
 
 	// callFrame holds the information to which the caller function can return.
 	// callFrame is created for currently executed function frame as well,
-	// so some of the fields are not yet set when native code is currently executing it.
+	// so some fields are not yet set when native code is currently executing it.
 	// That is, callFrameTop().returnAddress or returnStackBasePointer are not set
 	// until it makes a function call.
 	callFrame struct {
@@ -187,8 +187,8 @@ type (
 		parent *code
 	}
 
-	// code corresponds to a function in a module (not insantaited one). This holds the machine code
-	// compiled by Wazero's compiler.
+	// code corresponds to a function in a module (not instantiated one). This holds the machine code
+	// compiled by wazero compiler.
 	code struct {
 		// codeSegment is holding the compiled native code as a byte slice.
 		codeSegment []byte
@@ -203,7 +203,7 @@ type (
 		sourceModule *wasm.Module
 	}
 
-	// staticData holds the read-only data (i.e. out side of codeSegment which is marked as executable) per function.
+	// staticData holds the read-only data (i.e. outside codeSegment which is marked as executable) per function.
 	// This is used to store jump tables for br_table instructions.
 	// The primary index is the logical separation of multiple data, for example data[0] and data[1]
 	// correspond to different jump tables for different br_table instructions.
@@ -250,7 +250,7 @@ const (
 	callEngineValueStackContextStackBasePointerOffset = 120
 
 	// Offsets for callEngine exitContext.
-	callEngineExitContextnativeCallStatusCodeOffset       = 128
+	callEngineExitContextNativeCallStatusCodeOffset       = 128
 	callEngineExitContextBuiltinFunctionCallAddressOffset = 132
 
 	// Offsets for callFrame.
@@ -495,9 +495,9 @@ func (e *engine) NewModuleEngine(name string, module *wasm.Module, importedFunct
 			return me, wasm.ErrElementOffsetOutOfBounds
 		}
 
-		for i, funcindex := range init.FunctionIndexes {
-			if funcindex != nil {
-				references[init.Offset+uint32(i)] = uintptr(unsafe.Pointer(me.functions[*funcindex]))
+		for i, funcIdx := range init.FunctionIndexes {
+			if funcIdx != nil {
+				references[init.Offset+uint32(i)] = uintptr(unsafe.Pointer(me.functions[*funcIdx]))
 			}
 		}
 	}
@@ -820,7 +820,7 @@ func (ce *callEngine) builtinFunctionMemoryGrow(ctx context.Context, mem *wasm.M
 
 func (ce *callEngine) builtinFunctionTableGrow(ctx context.Context, tables []*wasm.TableInstance) {
 	tableIndex := ce.popValue()
-	table := tables[tableIndex] // verifed not to be out of range by the func validation at compilation phase.
+	table := tables[tableIndex] // verified not to be out of range by the func validation at compilation phase.
 	num := ce.popValue()
 	ref := ce.popValue()
 	res := table.Grow(ctx, uint32(num), uintptr(ref))
