@@ -1374,6 +1374,18 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	ANDNPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x55}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/andnps
 	ANDNPS: {opcode: []byte{0x0f, 0x55}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/mulps
+	MULPS: {opcode: []byte{0x0f, 0x59}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/mulpd
+	MULPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x59}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/divps
+	DIVPS: {opcode: []byte{0x0f, 0x5e}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/divpd
+	DIVPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x5e}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/sqrtps
+	SQRTPS: {opcode: []byte{0x0f, 0x51}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/sqrtpd
+	SQRTPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x51}, requireSrcFloat: true, requireDstFloat: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {

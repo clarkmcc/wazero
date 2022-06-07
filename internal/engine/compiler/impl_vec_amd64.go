@@ -1383,5 +1383,27 @@ func (c *amd64Compiler) compileV128Max(o *wazeroir.OperationV128Max) error {
 
 // compileV128AvgrU implements compiler.compileV128AvgrU for amd64.
 func (c *amd64Compiler) compileV128AvgrU(o *wazeroir.OperationV128AvgrU) error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		inst = amd64.PAVGB
+	case wazeroir.ShapeI16x8:
+		inst = amd64.PAVGW
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }

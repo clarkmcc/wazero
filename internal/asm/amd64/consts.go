@@ -493,6 +493,18 @@ const (
 	ANDNPD
 	// ANDNPS is the ANDNPS instruction https://www.felixcloutier.com/x86/andnps
 	ANDNPS
+	// MULPS is the MULPS instruction https://www.felixcloutier.com/x86/mulps
+	MULPS
+	// MULPD is the MULPD instruction https://www.felixcloutier.com/x86/mulpd
+	MULPD
+	// DIVPS is the DIVPS instruction https://www.felixcloutier.com/x86/divps
+	DIVPS
+	// DIVPD is the DIVPD instruction https://www.felixcloutier.com/x86/divpd
+	DIVPD
+	// SQRTPS is the SQRTPS instruction https://www.felixcloutier.com/x86/sqrtps
+	SQRTPS
+	// SQRTPD is the SQRTPD instruction https://www.felixcloutier.com/x86/sqrtpd
+	SQRTPD
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd
@@ -951,6 +963,18 @@ func InstructionName(instruction asm.Instruction) string {
 		return "ANDNPD"
 	case ANDNPS:
 		return "ANDNPS"
+	case MULPS:
+		return "MULPS"
+	case MULPD:
+		return "MULPD"
+	case DIVPS:
+		return "DIVPS"
+	case DIVPD:
+		return "DIVPD"
+	case SQRTPS:
+		return "SQRTPS"
+	case SQRTPD:
+		return "SQRTPD"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }

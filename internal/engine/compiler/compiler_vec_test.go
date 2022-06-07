@@ -3274,3 +3274,86 @@ func TestCompiler_compileV128Cmp(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128AvgrU(t *testing.T) {
+	tests := []struct {
+		name        string
+		shape       wazeroir.Shape
+		x1, x2, exp [16]byte
+	}{
+		{
+			name:  "i8x16",
+			shape: wazeroir.ShapeI8x16,
+			x1:    [16]byte{0: 1, 2: 10, 10: 10, 15: math.MaxUint8},
+			x2:    [16]byte{0: 10, 4: 5, 10: 5, 15: 10},
+			exp: [16]byte{
+				0:  byte((uint16(1) + uint16(10) + 1) / 2),
+				2:  byte((uint16(10) + 1) / 2),
+				4:  byte((uint16(5) + 1) / 2),
+				10: byte((uint16(10) + uint16(5) + 1) / 2),
+				15: byte((uint16(math.MaxUint8) + uint16(10) + 1) / 2),
+			},
+		},
+		{
+			name:  "i16x8",
+			shape: wazeroir.ShapeI16x8,
+			x1:    i16x8(1, 0, 100, 0, 0, math.MaxUint16, 0, 0),
+			x2:    i16x8(10, 0, math.MaxUint16, 0, 0, 1, 0, 0),
+			exp: i16x8(
+				uint16((uint32(1)+uint32(10)+1)/2),
+				0,
+				uint16((uint32(100)+uint32(math.MaxUint16)+1)/2),
+				0,
+				0,
+				uint16((uint32(1)+uint32(math.MaxUint16)+1)/2),
+				0, 0,
+			),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128AvgrU(&wazeroir.OperationV128AvgrU{Shape: tc.shape})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
+}

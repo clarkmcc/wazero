@@ -1091,6 +1091,60 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			},
 			exp: []byte{0x44, 0xf, 0x55, 0xe9},
 		},
+		{
+			name: "mulps xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: MULPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x44, 0xf, 0x59, 0xe9},
+		},
+		{
+			name: "mulpd xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: MULPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x59, 0xe9},
+		},
+		{
+			name: "divps xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: DIVPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x44, 0xf, 0x5e, 0xe9},
+		},
+		{
+			name: "divpd xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: DIVPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x5e, 0xe9},
+		},
+		{
+			name: "sqrtps xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: SQRTPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x44, 0xf, 0x51, 0xe9},
+		},
+		{
+			name: "sqrtpd xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: SQRTPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x51, 0xe9},
+		},
 	}
 
 	for _, tt := range tests {
