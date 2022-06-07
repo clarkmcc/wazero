@@ -1334,11 +1334,71 @@ func (c *amd64Compiler) compileV128Cmp(o *wazeroir.OperationV128Cmp) error {
 
 // compileV128AddSat implements compiler.compileV128AddSat for amd64.
 func (c *amd64Compiler) compileV128AddSat(o *wazeroir.OperationV128AddSat) error {
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		if o.Signed {
+			inst = amd64.PADDSB
+		} else {
+			inst = amd64.PADDUSB
+		}
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			inst = amd64.PADDSW
+		} else {
+			inst = amd64.PADDUSW
+		}
+	}
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
 
 // compileV128SubSat implements compiler.compileV128SubSat for amd64.
 func (c *amd64Compiler) compileV128SubSat(o *wazeroir.OperationV128SubSat) error {
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		if o.Signed {
+			inst = amd64.PSUBSB
+		} else {
+			inst = amd64.PSUBUSB
+		}
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			inst = amd64.PSUBSW
+		} else {
+			inst = amd64.PSUBUSW
+		}
+	}
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
 
@@ -1743,11 +1803,11 @@ func (c *amd64Compiler) compileV128MinOrMaxFloat(o wazeroir.Shape, isMin bool) e
 	// Denote the original x1r and x2r 's vector as v1 and v2 below.
 	//
 	// Execute MINPS/MINPD/MAXPS/MAXPD with destination = tmp (holding v1), and we have
-	//  tmp = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])} else {v1[i]} for i in 0..LANE_NUM]
+	//  tmp = [ if (v1[i] != NaN && v2[i] != NaN) {min_max(v1[i], v2[i])} else {v1[i]} for i in 0..LANE_NUM]
 	c.assembler.CompileRegisterToRegister(minOrMaxInst, x2r, tmp)
 
 	// Execute MINPS/MINPD/MAXPS/MAXPD with destination = x2r (holding v2), and we have
-	//  x2r = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])} else {v2[i]} for i in 0..LANE_NUM]
+	//  x2r = [ if (v1[i] != NaN && v2[i] != NaN) {min_max(v1[i], v2[i])} else {v2[i]} for i in 0..LANE_NUM]
 	c.assembler.CompileRegisterToRegister(minOrMaxInst, x1r, x2r)
 
 	// Copy the current tmp into x1r.
@@ -1761,7 +1821,7 @@ func (c *amd64Compiler) compileV128MinOrMaxFloat(o wazeroir.Shape, isMin bool) e
 	c.assembler.CompileRegisterToRegisterWithArg(cmpInst, x2r, x1r, 3)
 
 	// Mask all the lanes where either v1[i] or v2[i] is NaN, meaning that we have
-	//  tmp = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])} else {^0} for i in 0..LANE_NUM]
+	//  tmp = [ if (v1[i] != NaN && v2[i] != NaN) {min_max(v1[i], v2[i])} else {^0} for i in 0..LANE_NUM]
 	c.assembler.CompileRegisterToRegister(orInst, x1r, tmp)
 
 	// Put the inverse of NaN if either v1[i] or v2[i] is NaN on each lane, otherwise zero on x1r.
@@ -1770,9 +1830,9 @@ func (c *amd64Compiler) compileV128MinOrMaxFloat(o wazeroir.Shape, isMin bool) e
 	//
 	c.assembler.CompileConstToRegister(logicalRightShiftInst, shiftNumToInverseNaN, x1r)
 
-	// Finally, we get the result but putting NaNs on each lane where either of v1[i] or v2[i] is NaN, otherwise min(v1[i], v2[i]).
+	// Finally, we get the result but putting NaNs on each lane where either of v1[i] or v2[i] is NaN, otherwise min_max(v1[i], v2[i]).
 	// That means, we have:
-	//  x1r = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])}  else {NaN} for i in 0..LANE_NUM]
+	//  x1r = [ if (v1[i] != NaN && v2[i] != NaN) {min_max(v1[i], v2[i])}  else {NaN} for i in 0..LANE_NUM]
 	c.assembler.CompileRegisterToRegister(andnInst, tmp, x1r)
 
 	c.locationStack.markRegisterUnused(x2r)
