@@ -3652,3 +3652,100 @@ func TestCompiler_compileV128Mul(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128Neg(t *testing.T) {
+	tests := []struct {
+		name   string
+		shape  wazeroir.Shape
+		v, exp [16]byte
+	}{
+		{
+			name:  "i8x16",
+			shape: wazeroir.ShapeI8x16,
+			v:     [16]byte{1: 123, 5: i8ToU8(-1), 15: i8ToU8(-125)},
+			exp:   [16]byte{1: i8ToU8(-123), 5: 1, 15: 125},
+		},
+		{
+			name:  "i16x8",
+			shape: wazeroir.ShapeI16x8,
+			v:     i16x8(0, 0, i16ToU16(-123), 0, 1, 25, 8, i16ToU16(-1)),
+			exp:   i16x8(0, 0, 123, 0, i16ToU16(-1), i16ToU16(-25), i16ToU16(-8), 1),
+		},
+		{
+			name:  "i32x4",
+			shape: wazeroir.ShapeI32x4,
+			v:     i32x4(1230, 5, i32ToU32(-416), 0),
+			exp:   i32x4(i32ToU32(-1230), i32ToU32(-5), 416, 0),
+		},
+		{
+			name:  "i64x2",
+			shape: wazeroir.ShapeI64x2,
+			v:     i64x2(100, i64ToU64(-123450)),
+			exp:   i64x2(i64ToU64(-100), 123450),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			v:     f32x4(51234.12341, -123, float32(math.Inf(1)), 0.1),
+			exp:   f32x4(-51234.12341, 123, float32(math.Inf(-1)), -0.1),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			v:     f32x4(51234.12341, 0, float32(math.Inf(1)), 0.1),
+			exp:   f32x4(-51234.12341, float32(math.Copysign(0, -1)), float32(math.Inf(-1)), -0.1),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			v:     f64x2(1.123, math.Inf(-1)),
+			exp:   f64x2(-1.123, math.Inf(1)),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			v:     f64x2(0, math.Inf(-1)),
+			exp:   f64x2(math.Copysign(0, -1), math.Inf(1)),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Neg(&wazeroir.OperationV128Neg{Shape: tc.shape})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
+}

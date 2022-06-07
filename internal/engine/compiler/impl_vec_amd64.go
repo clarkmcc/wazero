@@ -1446,6 +1446,76 @@ func (c *amd64Compiler) compileV128Div(o *wazeroir.OperationV128Div) error {
 
 // compileV128Neg implements compiler.compileV128Neg for amd64.
 func (c *amd64Compiler) compileV128Neg(o *wazeroir.OperationV128Neg) error {
+	if o.Shape <= wazeroir.ShapeI64x2 {
+		return c.compileV128NegInt(o.Shape)
+	} else {
+		return c.compileV128NegFloat(o.Shape)
+	}
+}
+
+// compileV128NegInt implements compiler.compileV128Neg for integer lanes.
+func (c *amd64Compiler) compileV128NegInt(s wazeroir.Shape) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+
+	result, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	var subInst asm.Instruction
+	switch s {
+	case wazeroir.ShapeI8x16:
+		subInst = amd64.PSUBB
+	case wazeroir.ShapeI16x8:
+		subInst = amd64.PSUBW
+	case wazeroir.ShapeI32x4:
+		subInst = amd64.PSUBD
+	case wazeroir.ShapeI64x2:
+		subInst = amd64.PSUBQ
+	}
+
+	c.assembler.CompileRegisterToRegister(amd64.PXOR, result, result)
+	c.assembler.CompileRegisterToRegister(subInst, v.register, result)
+
+	c.locationStack.markRegisterUnused(v.register)
+	c.pushVectorRuntimeValueLocationOnRegister(result)
+	return nil
+}
+
+// compileV128NegInt implements compiler.compileV128Neg for float lanes.
+func (c *amd64Compiler) compileV128NegFloat(s wazeroir.Shape) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+
+	tmp, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	var leftShiftInst, xorInst asm.Instruction
+	var leftShiftAmount asm.ConstantValue
+	if s == wazeroir.ShapeF32x4 {
+		leftShiftInst, leftShiftAmount, xorInst = amd64.PSLLD, 31, amd64.XORPS
+	} else {
+		leftShiftInst, leftShiftAmount, xorInst = amd64.PSLLQ, 63, amd64.XORPD
+	}
+
+	// Clear all bits on tmp.
+	c.assembler.CompileRegisterToRegister(amd64.XORPS, tmp, tmp)
+	// Set all bits on tmp by CMPPD with arg=0 (== pseudo CMPEQPS instruction).
+	// See https://www.felixcloutier.com/x86/cmpps
+	c.assembler.CompileRegisterToRegisterWithArg(amd64.CMPPD, tmp, tmp, 0)
+	// Do the left shift on each lane to set only the most significant bit in each.
+	c.assembler.CompileConstToRegister(leftShiftInst, leftShiftAmount, tmp)
+	// Get the negated result by XOR on each lane with tmp.
+	c.assembler.CompileRegisterToRegister(xorInst, tmp, v.register)
+
+	c.pushVectorRuntimeValueLocationOnRegister(v.register)
 	return nil
 }
 
