@@ -60,7 +60,7 @@ func (c *amd64Compiler) compileV128Add(o *wazeroir.OperationV128Add) error {
 	case wazeroir.ShapeI16x8:
 		inst = amd64.PADDW
 	case wazeroir.ShapeI32x4:
-		inst = amd64.PADDL
+		inst = amd64.PADDD
 	case wazeroir.ShapeI64x2:
 		inst = amd64.PADDQ
 	case wazeroir.ShapeF32x4:
@@ -93,7 +93,7 @@ func (c *amd64Compiler) compileV128Sub(o *wazeroir.OperationV128Sub) error {
 	case wazeroir.ShapeI16x8:
 		inst = amd64.PSUBW
 	case wazeroir.ShapeI32x4:
-		inst = amd64.PSUBL
+		inst = amd64.PSUBD
 	case wazeroir.ShapeI64x2:
 		inst = amd64.PSUBQ
 	case wazeroir.ShapeF32x4:

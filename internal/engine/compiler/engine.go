@@ -294,10 +294,10 @@ const (
 	// https://github.com/golang/go/blob/release-branch.go1.17/src/runtime/runtime2.go#L207-L210
 	interfaceDataOffset = 8
 
-	// Consts for DataInstance.
+	// Consts for wasm.DataInstance.
 	dataInstanceStructSize = 24
 
-	// Consts for ElementInstance.
+	// Consts for wasm.ElementInstance.
 	elementInstanceStructSize = 32
 
 	// pointerSizeLog2 satisfies: 1 << pointerSizeLog2 = sizeOf(uintptr)
@@ -330,7 +330,7 @@ const (
 	nativeCallStatusIntegerDivisionByZero
 )
 
-// causePanic causes a panic with the corresponding error to the status code.
+// causePanic causes a panic with the corresponding error to the nativeCallStatusCode.
 func (s nativeCallStatusCode) causePanic() {
 	var err error
 	switch s {

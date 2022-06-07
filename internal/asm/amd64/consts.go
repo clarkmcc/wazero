@@ -323,16 +323,16 @@ const (
 	PADDB
 	// PADDW is the PADDW instruction. https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq
 	PADDW
-	// PADDL is the PADDD instruction. https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq
-	PADDL
+	// PADDD is the PADDD instruction. https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq
+	PADDD
 	// PADDQ is the PADDQ instruction. https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq
 	PADDQ
 	// PSUBB is the PSUBB instruction. https://www.felixcloutier.com/x86/psubb:psubw:psubd
 	PSUBB
 	// PSUBW is the PSUBW instruction. https://www.felixcloutier.com/x86/psubb:psubw:psubd
 	PSUBW
-	// PSUBL is the PSUBD instruction. https://www.felixcloutier.com/x86/psubb:psubw:psubd
-	PSUBL
+	// PSUBD is the PSUBD instruction. https://www.felixcloutier.com/x86/psubb:psubw:psubd
+	PSUBD
 	// PSUBQ is the PSUBQ instruction. https://www.felixcloutier.com/x86/psubq
 	PSUBQ
 	// ADDPS is the ADDPS instruction. https://www.felixcloutier.com/x86/addps
@@ -449,6 +449,50 @@ const (
 	PMAXUW
 	// PMAXUB is the PMAXUB instruction https://www.felixcloutier.com/x86/pmaxub:pmaxuw
 	PMAXUB
+	// PMULLW is the PMULLW instruction https://www.felixcloutier.com/x86/pmullw
+	PMULLW
+	// PMULLD is the PMULLD instruction https://www.felixcloutier.com/x86/pmulld:pmullq
+	PMULLD
+	// PMULUDQ is the PMULUDQ instruction https://www.felixcloutier.com/x86/pmuludq
+	PMULUDQ
+	// PSUBSB is the PSUBSB instruction https://www.felixcloutier.com/x86/psubsb:psubsw
+	PSUBSB
+	// PSUBSW is the PSUBSW instruction https://www.felixcloutier.com/x86/psubsb:psubsw
+	PSUBSW
+	// PSUBUSB is the PSUBUSB instruction https://www.felixcloutier.com/x86/psubusb:psubusw
+	PSUBUSB
+	// PSUBUSW is the PSUBUSW instruction https://www.felixcloutier.com/x86/psubusb:psubusw
+	PSUBUSW
+	// PADDSW is the PADDSW instruction https://www.felixcloutier.com/x86/paddsb:paddsw
+	PADDSW
+	// PADDSB is the PADDSB instruction https://www.felixcloutier.com/x86/paddsb:paddsw
+	PADDSB
+	// PADDUSW is the PADDUSW instruction https://www.felixcloutier.com/x86/paddusb:paddusw
+	PADDUSW
+	// PAVGB is the PAVGB instruction https://www.felixcloutier.com/x86/pavgb:pavgw
+	PAVGB
+	// PAVGW is the PAVGW instruction https://www.felixcloutier.com/x86/pavgb:pavgw
+	PAVGW
+	// PABSB is the PABSB instruction https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSB
+	// PABSW is the PABSW instruction https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSW
+	// PABSD is the PABSD instruction https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSD
+	// BLENDVPD is the BLENDVPD instruction https://www.felixcloutier.com/x86/blendvpd
+	BLENDVPD
+	// MAXPD is the MAXPD instruction https://www.felixcloutier.com/x86/maxpd
+	MAXPD
+	// MAXPS is the MAXPS instruction https://www.felixcloutier.com/x86/maxps
+	MAXPS
+	// MINPD is the MINPD instruction https://www.felixcloutier.com/x86/minpd
+	MINPD
+	// MINPS is the MINPS instruction https://www.felixcloutier.com/x86/minps
+	MINPS
+	// ANDNPD is the ANDNPD instruction https://www.felixcloutier.com/x86/andnpd
+	ANDNPD
+	// ANDNPS is the ANDNPS instruction https://www.felixcloutier.com/x86/andnps
+	ANDNPS
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd
@@ -731,8 +775,8 @@ func InstructionName(instruction asm.Instruction) string {
 		return "PADDB"
 	case PADDW:
 		return "PADDW"
-	case PADDL:
-		return "PADDL"
+	case PADDD:
+		return "PADDD"
 	case PADDQ:
 		return "PADDQ"
 	case ADDPS:
@@ -743,7 +787,7 @@ func InstructionName(instruction asm.Instruction) string {
 		return "PSUBB"
 	case PSUBW:
 		return "PSUBW"
-	case PSUBL:
+	case PSUBD:
 		return "PSUBL"
 	case PSUBQ:
 		return "PSUBQ"
@@ -863,6 +907,50 @@ func InstructionName(instruction asm.Instruction) string {
 		return "PMAXSW"
 	case PMAXSB:
 		return "PMAXSB"
+	case PMULLW:
+		return "PMULLW"
+	case PMULLD:
+		return "PMULLD"
+	case PMULUDQ:
+		return "PMULUDQ"
+	case PSUBSB:
+		return "PSUBSB"
+	case PSUBUSB:
+		return "PSUBUSB"
+	case PADDSW:
+		return "PADDSW"
+	case PADDSB:
+		return "PADDSB"
+	case PADDUSW:
+		return "PADDUSW"
+	case PSUBSW:
+		return "PSUBSW"
+	case PSUBUSW:
+		return "PSUBUSW"
+	case PAVGB:
+		return "PAVGB"
+	case PAVGW:
+		return "PAVGW"
+	case PABSB:
+		return "PABSB"
+	case PABSW:
+		return "PABSW"
+	case PABSD:
+		return "PABSD"
+	case BLENDVPD:
+		return "BLENDVPD"
+	case MAXPD:
+		return "MAXPD"
+	case MAXPS:
+		return "MAXPS"
+	case MINPD:
+		return "MINPD"
+	case MINPS:
+		return "MINPS"
+	case ANDNPD:
+		return "ANDNPD"
+	case ANDNPS:
+		return "ANDNPS"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }

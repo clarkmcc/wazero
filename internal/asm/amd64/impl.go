@@ -1214,12 +1214,12 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	// https://www.felixcloutier.com/x86/paddb:paddw:paddd:paddq
 	PADDB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfc}, requireSrcFloat: true, requireDstFloat: true},
 	PADDW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfd}, requireSrcFloat: true, requireDstFloat: true},
-	PADDL: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfe}, requireSrcFloat: true, requireDstFloat: true},
+	PADDD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfe}, requireSrcFloat: true, requireDstFloat: true},
 	PADDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xd4}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/psubb:psubw:psubd
 	PSUBB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xf8}, requireSrcFloat: true, requireDstFloat: true},
 	PSUBW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xf9}, requireSrcFloat: true, requireDstFloat: true},
-	PSUBL: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfa}, requireSrcFloat: true, requireDstFloat: true},
+	PSUBD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfa}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/psubq
 	PSUBQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xfb}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/addps
@@ -1330,6 +1330,50 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	PMAXUW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x3e}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/pmaxub:pmaxuw
 	PMAXUB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xde}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmullw
+	PMULLW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xd5}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmulld:pmullq
+	PMULLD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x40}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmuludq
+	PMULUDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xf4}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/psubsb:psubsw
+	PSUBSB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe8}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/psubsb:psubsw
+	PSUBSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe9}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/psubusb:psubusw
+	PSUBUSB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xd8}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/psubusb:psubusw
+	PSUBUSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xd9}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/paddsb:paddsw
+	PADDSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xed}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/paddsb:paddsw
+	PADDSB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xec}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/paddusb:paddusw
+	PADDUSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xdd}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pavgb:pavgw
+	PAVGB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe0}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pavgb:pavgw
+	PAVGW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe3}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSB: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x1c}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x1d}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pabsb:pabsw:pabsd:pabsq
+	PABSD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x1e}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/blendvpd
+	BLENDVPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x15}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/maxpd
+	MAXPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x5f}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/maxps
+	MAXPS: {opcode: []byte{0x0f, 0x5f}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/minpd
+	MINPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x5d}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/minps
+	MINPS: {opcode: []byte{0x0f, 0x5d}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/andnpd
+	ANDNPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x55}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/andnps
+	ANDNPS: {opcode: []byte{0x0f, 0x55}, requireSrcFloat: true, requireDstFloat: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {

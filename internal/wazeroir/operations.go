@@ -205,7 +205,6 @@ func (o OperationKind) String() (ret string) {
 		ret = "Ctz"
 	case OperationKindPopcnt:
 		ret = "Popcnt"
-
 	case OperationKindDiv:
 		ret = "Div"
 	case OperationKindRem:
@@ -369,7 +368,7 @@ func (o OperationKind) String() (ret string) {
 	case OperationKindV128Max:
 		ret = "V128Max"
 	case OperationKindV128AvgrU:
-		ret = "V128Avgr_uU"
+		ret = "V128AvgrU"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
