@@ -1655,11 +1655,101 @@ func (c *amd64Compiler) compileV128Popcnt(o *wazeroir.OperationV128Popcnt) error
 
 // compileV128Min implements compiler.compileV128Min for amd64.
 func (c *amd64Compiler) compileV128Min(o *wazeroir.OperationV128Min) error {
+	if o.Shape >= wazeroir.ShapeF32x4 {
+		return c.compileV128MinFloat(o.Shape)
+	}
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		if o.Signed {
+			inst = amd64.PMINSB
+		} else {
+			inst = amd64.PMINUB
+		}
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			inst = amd64.PMINSW
+		} else {
+			inst = amd64.PMINUW
+		}
+	case wazeroir.ShapeI32x4:
+		if o.Signed {
+			inst = amd64.PMINSD
+		} else {
+			inst = amd64.PMINUD
+		}
+	}
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
+	return nil
+}
+
+// compileV128MinFloat implements compiler.compileV128Min for float lanes.
+func (c *amd64Compiler) compileV128MinFloat(o wazeroir.Shape) error {
 	return nil
 }
 
 // compileV128Max implements compiler.compileV128Max for amd64.
 func (c *amd64Compiler) compileV128Max(o *wazeroir.OperationV128Max) error {
+	if o.Shape >= wazeroir.ShapeF32x4 {
+		return c.compileV128MaxFloat(o.Shape)
+	}
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		if o.Signed {
+			inst = amd64.PMAXSB
+		} else {
+			inst = amd64.PMAXUB
+		}
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			inst = amd64.PMAXSW
+		} else {
+			inst = amd64.PMAXUW
+		}
+	case wazeroir.ShapeI32x4:
+		if o.Signed {
+			inst = amd64.PMAXSD
+		} else {
+			inst = amd64.PMAXUD
+		}
+	}
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
+	return nil
+}
+
+// compileV128MaxFloat implements compiler.compileV128Max for float lanes.
+func (c *amd64Compiler) compileV128MaxFloat(o wazeroir.Shape) error {
 	return nil
 }
 
