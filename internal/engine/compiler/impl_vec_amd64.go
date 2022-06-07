@@ -1394,7 +1394,7 @@ func (c *amd64Compiler) compileV128MulI64x2() error {
 		return err
 	}
 
-	c.locationStack.markRegisterUnused(tmp1)
+	c.locationStack.markRegisterUsed(tmp1)
 
 	tmp2, err := c.allocateRegister(registerTypeVector)
 	if err != nil {
