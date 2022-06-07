@@ -3922,3 +3922,192 @@ func TestCompiler_compileV128Div(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128Min(t *testing.T) {
+	tests := []struct {
+		name        string
+		shape       wazeroir.Shape
+		signed      bool
+		x1, x2, exp [16]byte
+	}{
+		{
+			name:   "i8x16s",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			x1:     [16]byte{0: 123, 5: i8ToU8(-1), 15: 2},
+			x2:     [16]byte{0: 1, 5: 0, 15: i8ToU8(-1)},
+			exp:    [16]byte{0: 1, 5: i8ToU8(-1), 15: i8ToU8(-1)},
+		},
+		{
+			name:   "i8x16u",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			x1:     [16]byte{0: 123, 5: i8ToU8(-1), 15: 2},
+			x2:     [16]byte{0: 1, 5: 0, 15: i8ToU8(-1)},
+			exp:    [16]byte{0: 1, 5: 0, 15: 2},
+		},
+		{
+			name:   "i16x8s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(1123, 0, 123, 1, 1, 6, i16ToU16(-123), 1),
+			x2:     i16x8(0, 123, i16ToU16(-123), 3, 1, 4, 5, 1),
+			exp:    i16x8(0, 0, i16ToU16(-123), 1, 1, 4, i16ToU16(-123), 1),
+		},
+		{
+			name:   "i16x8u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(1123, 0, 123, 1, 1, 6, i16ToU16(-123), 1),
+			x2:     i16x8(0, 123, i16ToU16(-123), 3, 1, 4, 5, 1),
+			exp:    i16x8(0, 0, 123, 1, 1, 4, 5, 1),
+		},
+		{
+			name:   "i32x4s",
+			shape:  wazeroir.ShapeI32x4,
+			signed: true,
+			x1:     i32x4(i32ToU32(-123), 0, 1, i32ToU32(math.MinInt32)),
+			x2:     i32x4(123, 5, 1, 0),
+			exp:    i32x4(i32ToU32(-123), 0, 1, i32ToU32(math.MinInt32)),
+		},
+		{
+			name:   "i32x4u",
+			shape:  wazeroir.ShapeI32x4,
+			signed: false,
+			x1:     i32x4(i32ToU32(-123), 0, 1, i32ToU32(math.MinInt32)),
+			x2:     i32x4(123, 5, 1, 0),
+			exp:    i32x4(123, 0, 1, 0),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			x1:    f32x4(float32(math.NaN()), -123.12, 2.3, float32(math.Inf(1))),
+			x2:    f32x4(5.5, 123.12, 5.0, float32(math.Inf(-1))),
+			exp:   f32x4(float32(math.NaN()), -123.12, 2.3, float32(math.Inf(-1))),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			x1:    f32x4(5.5, 123.12, -5.0, float32(math.Inf(-1))),
+			x2:    f32x4(-123.12, float32(math.NaN()), 2.3, float32(math.Inf(-1))),
+			exp:   f32x4(-123.12, float32(math.NaN()), -5.0, float32(math.Inf(-1))),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			x1:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			x2:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f32x4",
+			shape: wazeroir.ShapeF32x4,
+			x1:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			x2:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			x1:    f64x2(math.MinInt64, 0),
+			x2:    f64x2(math.MaxInt64, -12.3),
+			exp:   f64x2(math.MinInt64, -12.3),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			x1:    f64x2(math.MaxInt64, -12.3),
+			x2:    f64x2(math.MinInt64, 0),
+			exp:   f64x2(math.MinInt64, -12.3),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			x1:    f64x2(math.NaN(), math.NaN()),
+			x2:    f64x2(math.Inf(1), math.Inf(-1)),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name:  "f64x2",
+			shape: wazeroir.ShapeF64x2,
+			x1:    f64x2(math.Inf(1), math.Inf(-1)),
+			x2:    f64x2(math.NaN(), math.NaN()),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Min(&wazeroir.OperationV128Min{Shape: tc.shape, Signed: tc.signed})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			switch tc.shape {
+			case wazeroir.ShapeF64x2:
+				for _, vs := range [][2]float64{
+					{math.Float64frombits(lo), math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[:8]))},
+					{math.Float64frombits(hi), math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[8:]))},
+				} {
+					actual, exp := vs[0], vs[1]
+					if math.IsNaN(exp) {
+						require.True(t, math.IsNaN(actual))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			case wazeroir.ShapeF32x4:
+				for _, vs := range [][2]float32{
+					{math.Float32frombits(uint32(lo)), math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[:4]))},
+					{math.Float32frombits(uint32(lo >> 32)), math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[4:8]))},
+					{math.Float32frombits(uint32(hi)), math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[8:12]))},
+					{math.Float32frombits(uint32(hi >> 32)), math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[12:]))},
+				} {
+					actual, exp := vs[0], vs[1]
+					if math.IsNaN(float64(exp)) {
+						require.True(t, math.IsNaN(float64(actual)))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			default:
+				var actual [16]byte
+				binary.LittleEndian.PutUint64(actual[:8], lo)
+				binary.LittleEndian.PutUint64(actual[8:], hi)
+				require.Equal(t, tc.exp, actual)
+			}
+		})
+	}
+}

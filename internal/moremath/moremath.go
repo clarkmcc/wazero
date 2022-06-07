@@ -8,6 +8,7 @@ import "math"
 //
 // See https://github.com/golang/go/blob/1d20a362d0ca4898d77865e314ef6f73582daef0/src/math/dim.go#L74-L91
 func WasmCompatMin(x, y float64) float64 {
+	math.NaN()
 	switch {
 	case math.IsNaN(x) || math.IsNaN(y): // NaN cannot be compared with themselves, so we have to use IsNaN
 		return math.NaN()
