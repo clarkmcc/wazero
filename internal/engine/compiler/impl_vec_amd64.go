@@ -1343,6 +1343,99 @@ func (c *amd64Compiler) compileV128SubSat(o *wazeroir.OperationV128SubSat) error
 
 // compileV128Mul implements compiler.compileV128Mul for amd64.
 func (c *amd64Compiler) compileV128Mul(o *wazeroir.OperationV128Mul) error {
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeI16x8:
+		inst = amd64.PMULLW
+	case wazeroir.ShapeI32x4:
+		inst = amd64.PMULLD
+	case wazeroir.ShapeI64x2:
+		return c.compileV128MulI64x2()
+	case wazeroir.ShapeF32x4:
+		inst = amd64.MULPS
+	case wazeroir.ShapeF64x2:
+		inst = amd64.MULPD
+	}
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
+	return nil
+}
+
+// compileV128MulI64x2 implements V128Mul for i64x2.
+func (c *amd64Compiler) compileV128MulI64x2() error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	x1r, x2r := x1.register, x2.register
+
+	tmp1, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	c.locationStack.markRegisterUnused(tmp1)
+
+	tmp2, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	// Assuming that we have
+	//	x1r = [p1, p2] = [p1_lo, p1_hi, p2_lo, p2_high]
+	//  x2r = [q1, q2] = [q1_lo, q1_hi, q2_lo, q2_high]
+	// where pN and qN are 64-bit (quad word) lane, and pN_lo, pN_hi, qN_lo and qN_hi are 32-bit (double word) lane.
+
+	// Copy x1's value into tmp1.
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, tmp1)
+	// And do the logical right shift by 32-bit on tmp1, which makes tmp1 = [0, p1_high, 0, p2_high]
+	c.assembler.CompileConstToRegister(amd64.PSRLQ, 32, tmp1)
+
+	// Execute "pmuludq x2r,tmp1", which makes tmp1 = [p1_high*q1_lo, p2_high*q2_lo] where each lane is 64-bit.
+	c.assembler.CompileRegisterToRegister(amd64.PMULUDQ, x2r, tmp1)
+
+	// Copy x2's value into tmp2.
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x2r, tmp2)
+	// And do the logical right shift by 32-bit on tmp2, which makes tmp2 = [0, q1_high, 0, q2_high]
+	c.assembler.CompileConstToRegister(amd64.PSRLQ, 32, tmp2)
+
+	// Execute "pmuludq x1r,tmp2", which makes tmp2 = [p1_lo*q1_high, p2_lo*q2_high] where each lane is 64-bit.
+	c.assembler.CompileRegisterToRegister(amd64.PMULUDQ, x1r, tmp2)
+
+	// Adds tmp1 and tmp2 and do the logical left shift by 32-bit,
+	// which makes tmp1 = [(p1_lo*q1_high+p1_high*q1_lo)<<32, (p2_lo*q2_high+p2_high*q2_lo)<<32]
+	c.assembler.CompileRegisterToRegister(amd64.PADDQ, tmp2, tmp1)
+	c.assembler.CompileConstToRegister(amd64.PSLLQ, 32, tmp1)
+
+	// Execute "pmuludq x2r,x1r", which makes x1r = [p1_lo*q1_lo, p2_lo*q2_lo] where each lane is 64-bit.
+	c.assembler.CompileRegisterToRegister(amd64.PMULUDQ, x2r, x1r)
+
+	// Finally, we get the result by adding x1r and tmp1,
+	// which makes x1r = [(p1_lo*q1_high+p1_high*q1_lo)<<32+p1_lo*q1_lo, (p2_lo*q2_high+p2_high*q2_lo)<<32+p2_lo*q2_lo]
+	c.assembler.CompileRegisterToRegister(amd64.PADDQ, tmp1, x1r)
+
+	c.locationStack.markRegisterUnused(x2r, tmp1)
+	c.pushVectorRuntimeValueLocationOnRegister(x1r)
 	return nil
 }
 
