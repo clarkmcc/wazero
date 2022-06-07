@@ -1358,6 +1358,21 @@ func (c *amd64Compiler) compileV128Neg(o *wazeroir.OperationV128Neg) error {
 
 // compileV128Sqrt implements compiler.compileV128Sqrt for amd64.
 func (c *amd64Compiler) compileV128Sqrt(o *wazeroir.OperationV128Sqrt) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeF64x2:
+		inst = amd64.SQRTPD
+	case wazeroir.ShapeF32x4:
+		inst = amd64.SQRTPS
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, v.register, v.register)
+	c.pushVectorRuntimeValueLocationOnRegister(v.register)
 	return nil
 }
 
