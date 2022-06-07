@@ -1656,7 +1656,7 @@ func (c *amd64Compiler) compileV128Popcnt(o *wazeroir.OperationV128Popcnt) error
 // compileV128Min implements compiler.compileV128Min for amd64.
 func (c *amd64Compiler) compileV128Min(o *wazeroir.OperationV128Min) error {
 	if o.Shape >= wazeroir.ShapeF32x4 {
-		return c.compileV128MinFloat(o.Shape)
+		return c.compileV128MinOrMaxFloat(o.Shape, true)
 	}
 
 	var inst asm.Instruction
@@ -1698,8 +1698,8 @@ func (c *amd64Compiler) compileV128Min(o *wazeroir.OperationV128Min) error {
 	return nil
 }
 
-// compileV128MinFloat implements compiler.compileV128Min for float lanes.
-func (c *amd64Compiler) compileV128MinFloat(o wazeroir.Shape) error {
+// compileV128MinOrMaxFloat implements compiler.compileV128Min and compiler.compileV128Max for float lanes.
+func (c *amd64Compiler) compileV128MinOrMaxFloat(o wazeroir.Shape, isMin bool) error {
 	x2 := c.locationStack.popV128()
 	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
 		return err
@@ -1717,14 +1717,24 @@ func (c *amd64Compiler) compileV128MinFloat(o wazeroir.Shape) error {
 		return err
 	}
 
-	var minInst, cmpInst, andnInst, orInst, logicalRightShiftInst asm.Instruction
+	var minOrMaxInst, cmpInst, andnInst, orInst, logicalRightShiftInst asm.Instruction
 	var shiftNumToInverseNaN asm.ConstantValue
 	if o == wazeroir.ShapeF32x4 {
-		minInst, cmpInst, andnInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
-			amd64.MINPS, amd64.CMPPS, amd64.ANDNPS, amd64.ORPS, amd64.PSRLD, 0xa
+		cmpInst, andnInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
+			amd64.CMPPS, amd64.ANDNPS, amd64.ORPS, amd64.PSRLD, 0xa
+		if isMin {
+			minOrMaxInst = amd64.MINPS
+		} else {
+			minOrMaxInst = amd64.MAXPS
+		}
 	} else {
-		minInst, cmpInst, andnInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
-			amd64.MINPD, amd64.CMPPD, amd64.ANDNPD, amd64.ORPD, amd64.PSRLQ, 0xd
+		cmpInst, andnInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
+			amd64.CMPPD, amd64.ANDNPD, amd64.ORPD, amd64.PSRLQ, 0xd
+		if isMin {
+			minOrMaxInst = amd64.MINPD
+		} else {
+			minOrMaxInst = amd64.MAXPD
+		}
 	}
 
 	// Copy the value on x1 to tmp.
@@ -1732,13 +1742,13 @@ func (c *amd64Compiler) compileV128MinFloat(o wazeroir.Shape) error {
 
 	// Denote the original x1r and x2r 's vector as v1 and v2 below.
 	//
-	// Execute MINPS/MINPD with destination = tmp (holding v1), and we have
+	// Execute MINPS/MINPD/MAXPS/MAXPD with destination = tmp (holding v1), and we have
 	//  tmp = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])} else {v1[i]} for i in 0..LANE_NUM]
-	c.assembler.CompileRegisterToRegister(minInst, x2r, tmp)
+	c.assembler.CompileRegisterToRegister(minOrMaxInst, x2r, tmp)
 
-	// Execute MINPS/MINPD with destination = x2r (holding v2), and we have
+	// Execute MINPS/MINPD/MAXPS/MAXPD with destination = x2r (holding v2), and we have
 	//  x2r = [ if (v1[i] != NaN && v2[i] != NaN) {min(v1[i], v2[i])} else {v2[i]} for i in 0..LANE_NUM]
-	c.assembler.CompileRegisterToRegister(minInst, x1r, x2r)
+	c.assembler.CompileRegisterToRegister(minOrMaxInst, x1r, x2r)
 
 	// Copy the current tmp into x1r.
 	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, tmp, x1r)
@@ -1773,7 +1783,7 @@ func (c *amd64Compiler) compileV128MinFloat(o wazeroir.Shape) error {
 // compileV128Max implements compiler.compileV128Max for amd64.
 func (c *amd64Compiler) compileV128Max(o *wazeroir.OperationV128Max) error {
 	if o.Shape >= wazeroir.ShapeF32x4 {
-		return c.compileV128MaxFloat(o.Shape)
+		return c.compileV128MinOrMaxFloat(o.Shape, false)
 	}
 
 	var inst asm.Instruction
@@ -1817,6 +1827,78 @@ func (c *amd64Compiler) compileV128Max(o *wazeroir.OperationV128Max) error {
 
 // compileV128MaxFloat implements compiler.compileV128Max for float lanes.
 func (c *amd64Compiler) compileV128MaxFloat(o wazeroir.Shape) error {
+	//
+	//x2 := c.locationStack.popV128()
+	//if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+	//	return err
+	//}
+	//
+	//x1 := c.locationStack.popV128()
+	//if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+	//	return err
+	//}
+	//
+	//x1r, x2r := x1.register, x2.register
+	//
+	//tmp, err := c.allocateRegister(registerTypeVector)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//var maxInst, cmpInst, andnInst, xorInst, orInst, logicalRightShiftInst asm.Instruction
+	//var shiftNumToInverseNaN asm.ConstantValue
+	//if o == wazeroir.ShapeF32x4 {
+	//	maxInst, cmpInst, andnInst, xorInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
+	//		amd64.MAXPS, amd64.CMPPS, amd64.ANDNPS, amd64.XORPS, amd64.ORPS, amd64.PSRLD, 0xa
+	//} else {
+	//	maxInst, cmpInst, andnInst, xorInst, orInst, logicalRightShiftInst, shiftNumToInverseNaN =
+	//		amd64.MAXPD, amd64.CMPPD, amd64.ANDNPD, amd64.XORPD, amd64.ORPD, amd64.PSRLQ, 0xd
+	//}
+	//
+	//// Copy the value on x1 to tmp.
+	//c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, tmp)
+	//
+	//// Denote the original x1r and x2r 's vector as v1 and v2 below.
+	////
+	//// Execute MAXPS/MAXPD with source = x2r (holding v2), and we have
+	////  x1r[i] = max(v1[i], v2[i]) if v1[i] != NaN && v2[i] != NaN, otherwise v1[i].
+	//c.assembler.CompileRegisterToRegister(maxInst, x2r, x1r)
+	//
+	//// Execute MAXPS/MAXPD with source = tmp (holding v1), and we have
+	////  x2r[i] = max(v1[i], v2[i]) if v1[i] != NaN && v2[i] != NaN, otherwise v2[i].
+	//c.assembler.CompileRegisterToRegister(maxInst, tmp, x2r)
+	//
+	//// Copy the current x1r into tmp, meaning that:
+	////  tmp[i] = max(v1[i], v2[i]) if v1[i] != NaN && v2[i] != NaN, otherwise v1[i].
+	//c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, tmp)
+	//
+	//// XOR tmp and x2r, meaning that:
+	////  tmp[i] = tmp[i]^x2r[i] = 0                   if v1[i] != NaN && v2[i] != NaN
+	////                         = v1[i]^v2[i]         if v1[i] == NaN && v2[i] != NaN
+	////                         = v1[i]^v2[i]         if v1[i] != NaN && v2[i] == NaN
+	////                         = Any non nan         otherwise
+	//c.assembler.CompileRegisterToRegister(xorInst, x2r, tmp)
+	//
+	//// OR tmp and x1r, meaning that:
+	////  x1r[i] = x1r[i] | tmp[i] = max(v1[i], v2[i]) | 0 = max(v1[i], v2[i])    if v1[i] != NaN && v2[i] != NaN
+	////                           = v1[i]|(v1[i]^v2[i])   = NaN                  if v1[i] == NaN && v2[i] != NaN
+	////                           = v1[i]|(v1[i]^v2[i])   = NaN                  if v1[i] != NaN && v2[i] == NaN
+	////                           = NaN                                          otherwise
+	//c.assembler.CompileRegisterToRegister(orInst, tmp, x1r)
+	//
+	//// Copy the current x1r into x2r, meaning that:
+	////  x2r[i] = NaN if one of operand is NaN, max(v1[0], v2[0]) otherwise.
+	//c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, x2r)
+	//
+	//// Subtract tmp from x2r, and we have:
+	////  x2r[i] = x2r[i] -
+	//
+	//// Copy the current x1r into x2r, therefore, we have:
+	////  x2r[i] = NaN(in any form) if one of v0[i] or v1[i] is NaN, otherwise max(v1[i], v2[i]).
+	//c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, x2r)
+	//
+	//c.locationStack.markRegisterUnused(x2r)
+	//c.pushVectorRuntimeValueLocationOnRegister(x1r)
 	return nil
 }
 
