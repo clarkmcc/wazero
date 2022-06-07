@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"errors"
 	"github.com/tetratelabs/wazero/internal/asm"
 	"github.com/tetratelabs/wazero/internal/asm/amd64"
 	"github.com/tetratelabs/wazero/internal/wazeroir"
@@ -827,7 +828,7 @@ func (c *amd64Compiler) compileV128ShrImpl(o *wazeroir.OperationV128Shr) error {
 	return nil
 }
 
-// compileV128ShrI64x2SignedImpl implements compiler.compileV128Shr for i64x4 signed (arithmetic) shift.
+// compileV128ShrI64x2SignedImpl implements compiler.compileV128Shr for i64x2 signed (arithmetic) shift.
 // PSRAQ instruction requires AVX, so we emulate it without AVX instructions. https://www.felixcloutier.com/x86/psraw:psrad:psraq
 func (c *amd64Compiler) compileV128ShrI64x2SignedImpl() error {
 	const shiftCountRegister = amd64.RegCX
@@ -1441,6 +1442,29 @@ func (c *amd64Compiler) compileV128MulI64x2() error {
 
 // compileV128Div implements compiler.compileV128Div for amd64.
 func (c *amd64Compiler) compileV128Div(o *wazeroir.OperationV128Div) error {
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	var inst asm.Instruction
+	switch o.Shape {
+	case wazeroir.ShapeF32x4:
+		inst = amd64.DIVPS
+	case wazeroir.ShapeF64x2:
+		inst = amd64.DIVPD
+	}
+
+	c.assembler.CompileRegisterToRegister(inst, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
 
@@ -1505,8 +1529,6 @@ func (c *amd64Compiler) compileV128NegFloat(s wazeroir.Shape) error {
 		leftShiftInst, leftShiftAmount, xorInst = amd64.PSLLQ, 63, amd64.XORPD
 	}
 
-	// Clear all bits on tmp.
-	c.assembler.CompileRegisterToRegister(amd64.XORPS, tmp, tmp)
 	// Set all bits on tmp by CMPPD with arg=0 (== pseudo CMPEQPS instruction).
 	// See https://www.felixcloutier.com/x86/cmpps
 	c.assembler.CompileRegisterToRegisterWithArg(amd64.CMPPD, tmp, tmp, 0)
@@ -1541,6 +1563,88 @@ func (c *amd64Compiler) compileV128Sqrt(o *wazeroir.OperationV128Sqrt) error {
 
 // compileV128Abs implements compiler.compileV128Abs for amd64.
 func (c *amd64Compiler) compileV128Abs(o *wazeroir.OperationV128Abs) error {
+	if o.Shape == wazeroir.ShapeI64x2 {
+		return c.compileV128AbsI64x2()
+	}
+
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+
+	result := v.register
+	switch o.Shape {
+	case wazeroir.ShapeI8x16:
+		c.assembler.CompileRegisterToRegister(amd64.PABSB, result, result)
+	case wazeroir.ShapeI16x8:
+		c.assembler.CompileRegisterToRegister(amd64.PABSW, result, result)
+	case wazeroir.ShapeI32x4:
+		c.assembler.CompileRegisterToRegister(amd64.PABSD, result, result)
+	case wazeroir.ShapeF32x4:
+		tmp, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
+		}
+		// Set all bits on tmp.
+		c.assembler.CompileRegisterToRegister(amd64.PCMPEQD, tmp, tmp)
+		// Shift right packed single floats by 1 to clear the sign bits.
+		c.assembler.CompileConstToRegister(amd64.PSRLD, 1, tmp)
+		// Clear the sign bit of vr.
+		c.assembler.CompileRegisterToRegister(amd64.ANDPS, tmp, result)
+	case wazeroir.ShapeF64x2:
+		tmp, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
+		}
+		// Set all bits on tmp.
+		c.assembler.CompileRegisterToRegister(amd64.PCMPEQD, tmp, tmp)
+		// Shift right packed single floats by 1 to clear the sign bits.
+		c.assembler.CompileConstToRegister(amd64.PSRLQ, 1, tmp)
+		// Clear the sign bit of vr.
+		c.assembler.CompileRegisterToRegister(amd64.ANDPD, tmp, result)
+	}
+
+	c.pushVectorRuntimeValueLocationOnRegister(result)
+	return nil
+}
+
+// compileV128AbsI64x2 implements compileV128Abs for i64x2 lanes.
+func (c *amd64Compiler) compileV128AbsI64x2() error {
+	// See https://www.felixcloutier.com/x86/blendvpd
+	const blendMaskReg = amd64.RegX0
+	c.onValueReleaseRegisterToStack(blendMaskReg)
+	c.locationStack.markRegisterUsed(blendMaskReg)
+
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	if vr == blendMaskReg {
+		return errors.New("BUG: X0 must not be used")
+	}
+
+	tmp, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+	c.locationStack.markRegisterUsed(tmp)
+
+	// Copy the value to tmp.
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp)
+
+	// Clear all bits on blendMaskReg.
+	c.assembler.CompileRegisterToRegister(amd64.PXOR, blendMaskReg, blendMaskReg)
+	// Subtract vr from blendMaskReg.
+	c.assembler.CompileRegisterToRegister(amd64.PSUBQ, vr, blendMaskReg)
+	// Copy the subtracted value ^^ back into vr.
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, blendMaskReg, vr)
+
+	c.assembler.CompileRegisterToRegister(amd64.BLENDVPD, tmp, vr)
+
+	c.locationStack.markRegisterUnused(blendMaskReg, tmp)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 
