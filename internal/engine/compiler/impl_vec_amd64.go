@@ -2099,3 +2099,18 @@ func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, mode byte) error {
 	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
+
+// compileV128Extend implements compiler.compileV128Extend for amd64.
+func (c *amd64Compiler) compileV128Extend(*wazeroir.OperationV128Extend) error {
+	return nil
+}
+
+// compileV128ExtMul implements compiler.compileV128ExtMul for amd64.
+func (c *amd64Compiler) compileV128ExtMul(*wazeroir.OperationV128ExtMul) error {
+	return nil
+}
+
+// compileV128Q15mulrSatS implements compiler.compileV128Q15mulrSatS for amd64.
+func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSatS) error {
+	return nil
+}

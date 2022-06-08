@@ -541,4 +541,22 @@ type compiler interface {
 	// compileV128Nearest adds instructions which are equivalent to wasm.OpcodeVecXXXNearest.
 	// See wasm.OpcodeVecF32x4NearestName wasm.OpcodeVecF64x2NearestName
 	compileV128Nearest(*wazeroir.OperationV128Nearest) error
+	// compileV128Extend adds instructions which are equivalent to wasm.OpcodeVec
+	// See wasm.OpcodeVecI16x8ExtendLowI8x16SName wasm.OpcodeVecI16x8ExtendHighI8x16SName
+	// 	wasm.OpcodeVecI16x8ExtendLowI8x16UName wasm.OpcodeVecI16x8ExtendHighI8x16UName
+	// 	wasm.OpcodeVecI32x4ExtendLowI16x8SName wasm.OpcodeVecI32x4ExtendHighI16x8SName
+	// 	wasm.OpcodeVecI32x4ExtendLowI16x8UName wasm.OpcodeVecI32x4ExtendHighI16x8UName
+	// 	wasm.OpcodeVecI64x2ExtendLowI32x4SName wasm.OpcodeVecI64x2ExtendHighI32x4SName
+	// 	wasm.OpcodeVecI64x2ExtendLowI32x4UName wasm.OpcodeVecI64x2ExtendHighI32x4UName
+	compileV128Extend(*wazeroir.OperationV128Extend) error
+	// compileV128ExtMul adds instructions which are equivalent to wasm.OpcodeVecXXXXExtMulYYY.
+	// See wasm.OpcodeVecI16x8ExtMulLowI8x16SName wasm.OpcodeVecI16x8ExtMulLowI8x16UName
+	// 	wasm.OpcodeVecI16x8ExtMulHighI8x16SName wasm.OpcodeVecI16x8ExtMulHighI8x16UName
+	//  wasm.OpcodeVecI32x4ExtMulLowI16x8SName wasm.OpcodeVecI32x4ExtMulLowI16x8UName
+	// 	wasm.OpcodeVecI32x4ExtMulHighI16x8SName wasm.OpcodeVecI32x4ExtMulHighI16x8UName
+	//  wasm.OpcodeVecI64x2ExtMulLowI32x4SName wasm.OpcodeVecI64x2ExtMulLowI32x4UName
+	// 	wasm.OpcodeVecI64x2ExtMulHighI32x4SName wasm.OpcodeVecI64x2ExtMulHighI32x4UName
+	compileV128ExtMul(*wazeroir.OperationV128ExtMul) error
+	// compileV128Q15mulrSatS adds instructions which are equivalent to wasm.OpcodeVecI16x8Q15mulrSatSName.
+	compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSatS) error
 }

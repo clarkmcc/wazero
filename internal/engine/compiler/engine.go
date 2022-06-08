@@ -1128,6 +1128,12 @@ func compileWasmFunction(_ wasm.Features, ir *wazeroir.CompilationResult) (*code
 			err = compiler.compileV128Trunc(o)
 		case *wazeroir.OperationV128Nearest:
 			err = compiler.compileV128Nearest(o)
+		case *wazeroir.OperationV128Extend:
+			err = compiler.compileV128Extend(o)
+		case *wazeroir.OperationV128ExtMul:
+			err = compiler.compileV128ExtMul(o)
+		case *wazeroir.OperationV128Q15mulrSatS:
+			err = compiler.compileV128Q15mulrSatS(o)
 		default:
 			err = errors.New("unsupported")
 		}
