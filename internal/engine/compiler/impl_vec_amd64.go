@@ -2102,7 +2102,6 @@ func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, mode byte) error {
 
 // compileV128Extend implements compiler.compileV128Extend for amd64.
 func (c *amd64Compiler) compileV128Extend(o *wazeroir.OperationV128Extend) error {
-
 	v := c.locationStack.popV128()
 	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
 		return err
@@ -2144,7 +2143,41 @@ func (c *amd64Compiler) compileV128Extend(o *wazeroir.OperationV128Extend) error
 }
 
 // compileV128ExtMul implements compiler.compileV128ExtMul for amd64.
-func (c *amd64Compiler) compileV128ExtMul(*wazeroir.OperationV128ExtMul) error {
+func (c *amd64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	x1r, x2r := x1.register, x2.register
+
+	switch o.OriginShape {
+	case wazeroir.ShapeI8x16:
+		if !o.UseLow {
+			// We have to shift the higher 64-bits into the lower ones before the actual extending instruction.
+			// Shifting right by 0x8 * 8 = 64bits and concatenate itself.
+			// See https://www.felixcloutier.com/x86/palignr
+			c.assembler.CompileRegisterToRegisterWithArg(amd64.PALIGNR, x1r, x1r, 0x8)
+			c.assembler.CompileRegisterToRegisterWithArg(amd64.PALIGNR, x2r, x2r, 0x8)
+		}
+
+		var ext asm.Instruction
+		if o.Signed {
+			ext = amd64.PMOVSXBW
+		} else {
+			ext = amd64.PMOVZXBW
+		}
+
+		// Signed or Zero extend lower half packed bytes to packed words.
+		c.assembler.CompileRegisterToRegister(ext, x1r, x1r)
+		c.assembler.CompileRegisterToRegister(ext, x2r, x2r)
+	}
+
 	return nil
 }
 
