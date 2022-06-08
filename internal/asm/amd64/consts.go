@@ -979,6 +979,10 @@ func InstructionName(instruction asm.Instruction) string {
 		return "SQRTPS"
 	case SQRTPD:
 		return "SQRTPD"
+	case ROUNDPS:
+		return "ROUNDPS"
+	case ROUNDPD:
+		return "ROUNDPD"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }
