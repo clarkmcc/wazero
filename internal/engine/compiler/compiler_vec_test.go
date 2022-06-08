@@ -4538,3 +4538,73 @@ func TestCompiler_compileV128SubSat(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128Popcnt(t *testing.T) {
+	tests := []struct {
+		name   string
+		v, exp [16]byte
+	}{
+		{
+			name: "ones",
+			v: [16]byte{
+				1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7,
+				0, 1 << 2, 0, 1 << 4, 0, 1 << 6, 0, 0,
+			},
+			exp: [16]byte{
+				1, 1, 1, 1, 1, 1, 1, 1,
+				0, 1, 0, 1, 0, 1, 0, 0,
+			},
+		},
+		{
+			name: "mix",
+			v: [16]byte{
+				0b1, 0b11, 0b111, 0b1111, 0b11111, 0b111111, 0b1111111, 0b11111111,
+				0b10000001, 0b10000010, 0b10000100, 0b10001000, 0b10010000, 0b10100000, 0b11000000, 0,
+			},
+			exp: [16]byte{
+				1, 2, 3, 4, 5, 6, 7, 8,
+				2, 2, 2, 2, 2, 2, 2, 0,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Popcnt(&wazeroir.OperationV128Popcnt{})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
+}

@@ -1405,7 +1405,6 @@ func (c *amd64Compiler) compileV128SubSat(o *wazeroir.OperationV128SubSat) error
 
 // compileV128Mul implements compiler.compileV128Mul for amd64.
 func (c *amd64Compiler) compileV128Mul(o *wazeroir.OperationV128Mul) error {
-
 	var inst asm.Instruction
 	switch o.Shape {
 	case wazeroir.ShapeI16x8:
@@ -1709,8 +1708,89 @@ func (c *amd64Compiler) compileV128AbsI64x2() error {
 	return nil
 }
 
+var (
+	popcntMask = [32]byte{
+		0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f,
+		0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f,
+	}
+	popcntTable = [32]byte{
+		0x00, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x03,
+		0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04,
+	}
+)
+
 // compileV128Popcnt implements compiler.compileV128Popcnt for amd64.
-func (c *amd64Compiler) compileV128Popcnt(o *wazeroir.OperationV128Popcnt) error {
+func (c *amd64Compiler) compileV128Popcnt(*wazeroir.OperationV128Popcnt) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	tmp1, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	c.locationStack.markRegisterUsed(tmp1)
+
+	tmp2, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	c.locationStack.markRegisterUsed(tmp2)
+
+	tmp3, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	// Read the popcntMask into tmp1, and we have
+	//  tmp1 = [0xf, ..., 0xf]
+	if err := c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, popcntMask[:], tmp1); err != nil {
+		return err
+	}
+
+	// Copy the original value into tmp2.
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp2)
+
+	// Given that we have:
+	//  v = [b1, ..., b16] where bn = hn:ln and hn and ln are higher and lower 4-bits of bn.
+	//
+	// Take PAND on tmp1 and tmp2, and we have
+	//  tmp2 = [l1, ..., l16].
+	c.assembler.CompileRegisterToRegister(amd64.PAND, tmp1, tmp2)
+
+	// Do logical (packed word) right shift by 4 on vr and PAND with vr and tmp1, meaning that we have
+	//  vr = [h1, ...., h16].
+	c.assembler.CompileConstToRegister(amd64.PSRLW, 4, vr)
+	c.assembler.CompileRegisterToRegister(amd64.PAND, tmp1, vr)
+
+	// Read the popcntTable into tmp1, and we have
+	//  tmp1 = [0x00, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x03, 0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04]
+	if err := c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, popcntTable[:], tmp1); err != nil {
+		return err
+	}
+
+	// Copy the tmp1 into tmp3, and we have
+	//  tmp3 = [0x00, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x03, 0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04]
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQU, tmp1, tmp3)
+
+	//  tmp3 = [popcnt(l1), ..., popcnt(l16)].
+	c.assembler.CompileRegisterToRegister(amd64.PSHUFB, tmp2, tmp3)
+
+	//  tmp1 = [popcnt(h1), ..., popcnt(h16)].
+	c.assembler.CompileRegisterToRegister(amd64.PSHUFB, vr, tmp1)
+
+	// vr = tmp1 = [popcnt(h1), ..., popcnt(h16)].
+	c.assembler.CompileRegisterToRegister(amd64.MOVDQA, tmp1, vr)
+
+	// vr += tmp3 = [popcnt(h1)+popcnt(l1), ..., popcnt(h16)+popcnt(l16)] = [popcnt(b1), ..., popcnt(b16)].
+	c.assembler.CompileRegisterToRegister(amd64.PADDB, tmp3, vr)
+
+	c.locationStack.markRegisterUnused(tmp1, tmp2)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 
