@@ -2079,6 +2079,8 @@ func (c *amd64Compiler) compileV128Nearest(o *wazeroir.OperationV128Nearest) err
 	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundModeNearest)
 }
 
+// compileV128RoundImpl implements compileV128Nearest compileV128Trunc compileV128Floor and compileV128Ceil
+// with ROUNDPS (32-bit lane) and ROUNDPD (64-bit lane).
 func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, mode byte) error {
 	v := c.locationStack.popV128()
 	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
