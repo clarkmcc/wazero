@@ -1145,6 +1145,66 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			},
 			exp: []byte{0x66, 0x44, 0xf, 0x51, 0xe9},
 		},
+		{
+			name: "roundps xmm13, xmm1, 0",
+			n: &NodeImpl{
+				Instruction: ROUNDPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         0,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x8, 0xe9, 0x0},
+		},
+		{
+			name: "roundps xmm13, xmm1, 1",
+			n: &NodeImpl{
+				Instruction: ROUNDPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         1,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x8, 0xe9, 0x1},
+		},
+		{
+			name: "roundps xmm13, xmm1, 3",
+			n: &NodeImpl{
+				Instruction: ROUNDPS,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         3,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x8, 0xe9, 0x3},
+		},
+		{
+			name: "roundpd xmm13, xmm1, 0",
+			n: &NodeImpl{
+				Instruction: ROUNDPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         0,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x9, 0xe9, 0x0},
+		},
+		{
+			name: "roundpd xmm13, xmm1, 1",
+			n: &NodeImpl{
+				Instruction: ROUNDPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         1,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x9, 0xe9, 0x1},
+		},
+		{
+			name: "roundpd xmm13, xmm1, 3",
+			n: &NodeImpl{
+				Instruction: ROUNDPD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         3,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x9, 0xe9, 0x3},
+		},
 	}
 
 	for _, tt := range tests {

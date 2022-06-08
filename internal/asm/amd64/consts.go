@@ -505,6 +505,10 @@ const (
 	SQRTPS
 	// SQRTPD is the SQRTPD instruction https://www.felixcloutier.com/x86/sqrtpd
 	SQRTPD
+	// ROUNDPS is the ROUNDPS instruction https://www.felixcloutier.com/x86/roundps
+	ROUNDPS
+	// ROUNDPD is the ROUNDPD instruction https://www.felixcloutier.com/x86/roundpd
+	ROUNDPD
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd

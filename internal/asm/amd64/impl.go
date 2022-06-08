@@ -1385,7 +1385,9 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	// https://www.felixcloutier.com/x86/sqrtps
 	SQRTPS: {opcode: []byte{0x0f, 0x51}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/sqrtpd
-	SQRTPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x51}, requireSrcFloat: true, requireDstFloat: true},
+	SQRTPD:  {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x51}, requireSrcFloat: true, requireDstFloat: true},
+	ROUNDPS: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x3a, 0x08}, requireSrcFloat: true, requireDstFloat: true, needArg: true},
+	ROUNDPD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x3a, 0x09}, requireSrcFloat: true, requireDstFloat: true, needArg: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {
