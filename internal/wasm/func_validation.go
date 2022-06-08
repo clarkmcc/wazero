@@ -1312,7 +1312,9 @@ func (m *Module) validateFunctionWithMaxStackValues(
 			case OpcodeVecI8x16Neg, OpcodeVecI16x8Neg, OpcodeVecI32x4Neg, OpcodeVecI64x2Neg, OpcodeVecF32x4Neg, OpcodeVecF64x2Neg,
 				OpcodeVecF32x4Sqrt, OpcodeVecF64x2Sqrt,
 				OpcodeVecI8x16Abs, OpcodeVecI8x16Popcnt, OpcodeVecI16x8Abs, OpcodeVecI32x4Abs, OpcodeVecI64x2Abs,
-				OpcodeVecF32x4Abs, OpcodeVecF64x2Abs:
+				OpcodeVecF32x4Abs, OpcodeVecF64x2Abs,
+				OpcodeVecF32x4Ceil, OpcodeVecF32x4Floor, OpcodeVecF32x4Trunc, OpcodeVecF32x4Nearest,
+				OpcodeVecF64x2Ceil, OpcodeVecF64x2Floor, OpcodeVecF64x2Trunc, OpcodeVecF64x2Nearest:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeV128); err != nil {
 					return fmt.Errorf("cannot pop the operand for %s: %v", vectorInstructionName[vecOpcode], err)
 				}
@@ -1329,7 +1331,8 @@ func (m *Module) validateFunctionWithMaxStackValues(
 				OpcodeVecI16x8MinS, OpcodeVecI16x8MinU, OpcodeVecI16x8MaxS, OpcodeVecI16x8MaxU,
 				OpcodeVecI16x8AvgrU,
 				OpcodeVecI32x4MinS, OpcodeVecI32x4MinU, OpcodeVecI32x4MaxS, OpcodeVecI32x4MaxU,
-				OpcodeVecF32x4Min, OpcodeVecF32x4Max, OpcodeVecF64x2Min, OpcodeVecF64x2Max:
+				OpcodeVecF32x4Min, OpcodeVecF32x4Max, OpcodeVecF64x2Min, OpcodeVecF64x2Max,
+				OpcodeVecF32x4Pmin, OpcodeVecF32x4Pmax, OpcodeVecF64x2Pmin, OpcodeVecF64x2Pmax:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeV128); err != nil {
 					return fmt.Errorf("cannot pop the operand for %s: %v", vectorInstructionName[vecOpcode], err)
 				}

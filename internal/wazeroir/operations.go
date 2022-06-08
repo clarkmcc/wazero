@@ -369,6 +369,18 @@ func (o OperationKind) String() (ret string) {
 		ret = "V128Max"
 	case OperationKindV128AvgrU:
 		ret = "V128AvgrU"
+	case OperationKindV128Ceil:
+		ret = "V128Ceil"
+	case OperationKindV128Floor:
+		ret = "V128Floor"
+	case OperationKindV128Trunc:
+		ret = "V128Trunc"
+	case OperationKindV128Nearest:
+		ret = "V128Nearest"
+	case OperationKindV128Pmin:
+		return "V128Pmin"
+	case OperationKindV128Pmax:
+		return "V128Pmax"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
@@ -501,6 +513,12 @@ const (
 	OperationKindV128Min
 	OperationKindV128Max
 	OperationKindV128AvgrU
+	OperationKindV128Pmin
+	OperationKindV128Pmax
+	OperationKindV128Ceil
+	OperationKindV128Floor
+	OperationKindV128Trunc
+	OperationKindV128Nearest
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
@@ -1801,4 +1819,52 @@ type OperationV128AvgrU struct {
 // Kind implements Operation.Kind.
 func (o *OperationV128AvgrU) Kind() OperationKind {
 	return OperationKindV128AvgrU
+}
+
+// OperationV128Pmin implements Operation.
+type OperationV128Pmin struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Pmin) Kind() OperationKind {
+	return OperationKindV128Pmin
+}
+
+// OperationV128Pmax implements Operation.
+type OperationV128Pmax struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Pmax) Kind() OperationKind {
+	return OperationKindV128Pmax
+}
+
+// OperationV128Ceil implements Operation.
+type OperationV128Ceil struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Ceil) Kind() OperationKind {
+	return OperationKindV128Ceil
+}
+
+// OperationV128Floor implements Operation.
+type OperationV128Floor struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Floor) Kind() OperationKind {
+	return OperationKindV128Floor
+}
+
+// OperationV128Trunc implements Operation.
+type OperationV128Trunc struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Trunc) Kind() OperationKind {
+	return OperationKindV128Trunc
+}
+
+// OperationV128Nearest implements Operation.
+type OperationV128Nearest struct{ Shape Shape }
+
+// Kind implements Operation.Kind
+func (o *OperationV128Nearest) Kind() OperationKind {
+	return OperationKindV128Nearest
 }

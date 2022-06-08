@@ -3080,6 +3080,18 @@ func TestModule_funcValidation_SIMD(t *testing.T) {
 		{name: OpcodeVecF32x4MaxName, body: vv2v(OpcodeVecF32x4Max)},
 		{name: OpcodeVecF64x2MinName, body: vv2v(OpcodeVecF64x2Min)},
 		{name: OpcodeVecF64x2MaxName, body: vv2v(OpcodeVecF64x2Max)},
+		{name: OpcodeVecF32x4CeilName, body: v2v(OpcodeVecF32x4Ceil)},
+		{name: OpcodeVecF32x4FloorName, body: v2v(OpcodeVecF32x4Floor)},
+		{name: OpcodeVecF32x4TruncName, body: v2v(OpcodeVecF32x4Trunc)},
+		{name: OpcodeVecF32x4NearestName, body: v2v(OpcodeVecF32x4Nearest)},
+		{name: OpcodeVecF64x2CeilName, body: v2v(OpcodeVecF64x2Ceil)},
+		{name: OpcodeVecF64x2FloorName, body: v2v(OpcodeVecF64x2Floor)},
+		{name: OpcodeVecF64x2TruncName, body: v2v(OpcodeVecF64x2Trunc)},
+		{name: OpcodeVecF64x2NearestName, body: v2v(OpcodeVecF64x2Nearest)},
+		{name: OpcodeVecF32x4MinName, body: vv2v(OpcodeVecF32x4Pmin)},
+		{name: OpcodeVecF32x4MaxName, body: vv2v(OpcodeVecF32x4Pmax)},
+		{name: OpcodeVecF64x2MinName, body: vv2v(OpcodeVecF64x2Pmin)},
+		{name: OpcodeVecF64x2MaxName, body: vv2v(OpcodeVecF64x2Pmax)},
 	}
 
 	for _, tt := range tests {

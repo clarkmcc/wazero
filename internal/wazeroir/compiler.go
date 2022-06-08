@@ -2580,6 +2580,54 @@ operatorSwitch:
 			c.emit(
 				&OperationV128Max{Shape: ShapeF64x2},
 			)
+		case wasm.OpcodeVecF32x4Pmin:
+			c.emit(
+				&OperationV128Pmin{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF32x4Pmax:
+			c.emit(
+				&OperationV128Pmax{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF64x2Pmin:
+			c.emit(
+				&OperationV128Pmin{Shape: ShapeF64x2},
+			)
+		case wasm.OpcodeVecF64x2Pmax:
+			c.emit(
+				&OperationV128Pmax{Shape: ShapeF64x2},
+			)
+		case wasm.OpcodeVecF32x4Ceil:
+			c.emit(
+				&OperationV128Ceil{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF32x4Floor:
+			c.emit(
+				&OperationV128Floor{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF32x4Trunc:
+			c.emit(
+				&OperationV128Trunc{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF32x4Nearest:
+			c.emit(
+				&OperationV128Nearest{Shape: ShapeF32x4},
+			)
+		case wasm.OpcodeVecF64x2Ceil:
+			c.emit(
+				&OperationV128Ceil{Shape: ShapeF64x2},
+			)
+		case wasm.OpcodeVecF64x2Floor:
+			c.emit(
+				&OperationV128Floor{Shape: ShapeF64x2},
+			)
+		case wasm.OpcodeVecF64x2Trunc:
+			c.emit(
+				&OperationV128Trunc{Shape: ShapeF64x2},
+			)
+		case wasm.OpcodeVecF64x2Nearest:
+			c.emit(
+				&OperationV128Nearest{Shape: ShapeF64x2},
+			)
 		default:
 			return fmt.Errorf("unsupported vector instruction in wazeroir: %s", wasm.VectorInstructionName(vecOp))
 		}
