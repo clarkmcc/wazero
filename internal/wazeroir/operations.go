@@ -1884,7 +1884,7 @@ type OperationV128Extend struct {
 	// either ShapeI8x16, ShapeI16x8, or ShapeI32x4.
 	OriginShape Shape
 	Signed      bool
-	// UseLow true if it uses the lower bits of each lane for extension.
+	// UseLow true if it uses the lower half of vector for extension.
 	UseLow bool
 }
 
@@ -1899,7 +1899,7 @@ type OperationV128ExtMul struct {
 	// either ShapeI8x16, ShapeI16x8, or ShapeI32x4.
 	OriginShape Shape
 	Signed      bool
-	// UseLow true if it uses the lower bits of each lane for extension.
+	// UseLow true if it uses the lower half of vector for extension.
 	UseLow bool
 }
 
