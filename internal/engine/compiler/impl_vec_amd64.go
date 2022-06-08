@@ -1995,31 +1995,101 @@ func (c *amd64Compiler) compileV128AvgrU(o *wazeroir.OperationV128AvgrU) error {
 }
 
 // compileV128Pmin implements compiler.compileV128Pmin for amd64.
-func (c *amd64Compiler) compileV128Pmin(*wazeroir.OperationV128Pmin) error {
+func (c *amd64Compiler) compileV128Pmin(o *wazeroir.OperationV128Pmin) error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	var min asm.Instruction
+	if o.Shape == wazeroir.ShapeF32x4 {
+		min = amd64.MINPS
+	} else {
+		min = amd64.MINPD
+	}
+
+	x1r, v2r := x1.register, x2.register
+
+	c.assembler.CompileRegisterToRegister(min, x1r, v2r)
+
+	c.locationStack.markRegisterUnused(x1r)
+	c.pushVectorRuntimeValueLocationOnRegister(v2r)
 	return nil
 }
 
 // compileV128Pmax implements compiler.compileV128Pmax for amd64.
-func (c *amd64Compiler) compileV128Pmax(*wazeroir.OperationV128Pmax) error {
+func (c *amd64Compiler) compileV128Pmax(o *wazeroir.OperationV128Pmax) error {
+
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	var min asm.Instruction
+	if o.Shape == wazeroir.ShapeF32x4 {
+		min = amd64.MAXPS
+	} else {
+		min = amd64.MAXPD
+	}
+
+	x1r, v2r := x1.register, x2.register
+
+	c.assembler.CompileRegisterToRegister(min, x1r, v2r)
+
+	c.locationStack.markRegisterUnused(x1r)
+	c.pushVectorRuntimeValueLocationOnRegister(v2r)
 	return nil
 }
 
 // compileV128Ceil implements compiler.compileV128Ceil for amd64.
-func (c *amd64Compiler) compileV128Ceil(*wazeroir.OperationV128Ceil) error {
-	return nil
+func (c *amd64Compiler) compileV128Ceil(o *wazeroir.OperationV128Ceil) error {
+	const roundArgCeil = 0x2
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgCeil)
 }
 
 // compileV128Floor implements compiler.compileV128Floor for amd64.
-func (c *amd64Compiler) compileV128Floor(*wazeroir.OperationV128Floor) error {
-	return nil
+func (c *amd64Compiler) compileV128Floor(o *wazeroir.OperationV128Floor) error {
+	const roundArgFloor = 0x1
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgFloor)
 }
 
 // compileV128Trunc implements compiler.compileV128Trunc for amd64.
-func (c *amd64Compiler) compileV128Trunc(*wazeroir.OperationV128Trunc) error {
-	return nil
+func (c *amd64Compiler) compileV128Trunc(o *wazeroir.OperationV128Trunc) error {
+	const roundArgTrunc = 0x3
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgTrunc)
 }
 
 // compileV128Nearest implements compiler.compileV128Nearest for amd64.
-func (c *amd64Compiler) compileV128Nearest(*wazeroir.OperationV128Nearest) error {
+func (c *amd64Compiler) compileV128Nearest(o *wazeroir.OperationV128Nearest) error {
+	const roundArgNearest = 0x0
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgNearest)
+}
+
+func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, arg byte) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	var round asm.Instruction
+	if is32bit {
+		round = amd64.ROUNDPS
+	} else {
+		round = amd64.ROUNDPD
+	}
+
+	c.assembler.CompileRegisterToRegisterWithArg(round, vr, vr, arg)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
