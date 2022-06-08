@@ -509,6 +509,18 @@ const (
 	ROUNDPS
 	// ROUNDPD is the ROUNDPD instruction https://www.felixcloutier.com/x86/roundpd
 	ROUNDPD
+	// PALIGNR is the PALIGNR instruction https://www.felixcloutier.com/x86/palignr
+	PALIGNR
+	// PUNPCKLWD is the PUNPCKLWD instruction https://www.felixcloutier.com/x86/punpcklbw:punpcklwd:punpckldq:punpcklqdq
+	PUNPCKLWD
+	// PUNPCKHWD is the PUNPCKHWD instruction https://www.felixcloutier.com/x86/punpckhbw:punpckhwd:punpckhdq:punpckhqdq
+	PUNPCKHWD
+	// PMULHUW is the PMULHUW instruction https://www.felixcloutier.com/x86/pmulhuw
+	PMULHUW
+	// PMULDQ is the PMULDQ instruction https://www.felixcloutier.com/x86/pmuldq
+	PMULDQ
+	// PMULHRSW is the PMULHRSW instruction https://www.felixcloutier.com/x86/pmulhrsw
+	PMULHRSW
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd

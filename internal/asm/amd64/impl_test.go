@@ -1205,6 +1205,61 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			},
 			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0x9, 0xe9, 0x3},
 		},
+		{
+			name: "palignr xmm13, xmm1, 3",
+			n: &NodeImpl{
+				Instruction: PALIGNR,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+				Arg:         3,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x3a, 0xf, 0xe9, 0x3},
+		},
+		{
+			name: "punpcklwd xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: PUNPCKLWD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x61, 0xe9},
+		},
+		{
+			name: "punpckhwd xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: PUNPCKHWD,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x69, 0xe9},
+		},
+		{
+			name: "pmulhuw xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: PMULHUW,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0xe4, 0xe9},
+		},
+		{
+			name: "pmuldq xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: PMULDQ,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x38, 0x28, 0xe9},
+		},
+		{
+			name: "pmulhrsw xmm13, xmm1",
+			n: &NodeImpl{
+				Instruction: PMULHRSW,
+				SrcReg:      RegX1,
+				DstReg:      RegX13,
+			},
+			exp: []byte{0x66, 0x44, 0xf, 0x38, 0xb, 0xe9},
+		},
 	}
 
 	for _, tt := range tests {
