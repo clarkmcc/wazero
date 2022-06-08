@@ -2628,6 +2628,106 @@ operatorSwitch:
 			c.emit(
 				&OperationV128Nearest{Shape: ShapeF64x2},
 			)
+		case wasm.OpcodeVecI16x8ExtendLowI8x16S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI8x16, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI16x8ExtendHighI8x16S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI8x16, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI16x8ExtendLowI8x16U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI8x16, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI16x8ExtendHighI8x16U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI8x16, Signed: false, UseLow: false},
+			)
+		case wasm.OpcodeVecI32x4ExtendLowI16x8S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI16x8, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI32x4ExtendHighI16x8S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI16x8, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI32x4ExtendLowI16x8U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI16x8, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI32x4ExtendHighI16x8U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI16x8, Signed: false, UseLow: false},
+			)
+		case wasm.OpcodeVecI64x2ExtendLowI32x4S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI32x4, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI64x2ExtendHighI32x4S:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI32x4, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI64x2ExtendLowI32x4U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI32x4, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI64x2ExtendHighI32x4U:
+			c.emit(
+				&OperationV128Extend{OriginShape: ShapeI32x4, Signed: false, UseLow: false},
+			)
+		case wasm.OpcodeVecI16x8Q15mulrSatS:
+			c.emit(
+				&OperationV128Q15mulrSatS{},
+			)
+		case wasm.OpcodeVecI16x8ExtMulLowI8x16S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI8x16, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI16x8ExtMulHighI8x16S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI8x16, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI16x8ExtMulLowI8x16U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI8x16, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI16x8ExtMulHighI8x16U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI8x16, Signed: false, UseLow: false},
+			)
+		case wasm.OpcodeVecI32x4ExtMulLowI16x8S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI16x8, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI32x4ExtMulHighI16x8S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI16x8, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI32x4ExtMulLowI16x8U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI16x8, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI32x4ExtMulHighI16x8U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI16x8, Signed: false, UseLow: false},
+			)
+		case wasm.OpcodeVecI64x2ExtMulLowI32x4S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI32x4, Signed: true, UseLow: true},
+			)
+		case wasm.OpcodeVecI64x2ExtMulHighI32x4S:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI32x4, Signed: true, UseLow: false},
+			)
+		case wasm.OpcodeVecI64x2ExtMulLowI32x4U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI32x4, Signed: false, UseLow: true},
+			)
+		case wasm.OpcodeVecI64x2ExtMulHighI32x4U:
+			c.emit(
+				&OperationV128ExtMul{OriginShape: ShapeI32x4, Signed: false, UseLow: false},
+			)
 		default:
 			return fmt.Errorf("unsupported vector instruction in wazeroir: %s", wasm.VectorInstructionName(vecOp))
 		}

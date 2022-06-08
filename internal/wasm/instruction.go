@@ -495,7 +495,7 @@ const (
 	OpcodeVecI16x8ExtaddPairwiseI8x16U OpcodeVec = 0x7d
 	OpcodeVecI16x8Abs                  OpcodeVec = 0x80
 	OpcodeVecI16x8Neg                  OpcodeVec = 0x81
-	OpcodeVecI16x8Q16mulrSatS          OpcodeVec = 0x82
+	OpcodeVecI16x8Q15mulrSatS          OpcodeVec = 0x82
 	OpcodeVecI16x8AllTrue              OpcodeVec = 0x83
 	OpcodeVecI16x8BitMask              OpcodeVec = 0x84
 	OpcodeVecI16x8NarrowI32x4S         OpcodeVec = 0x85
@@ -1192,7 +1192,7 @@ const (
 	OpcodeVecI16x8ExtaddPairwiseI8x16UName = "i16x8.extadd_pairwise_i8x16_u"
 	OpcodeVecI16x8AbsName                  = "i16x8.abs"
 	OpcodeVecI16x8NegName                  = "i16x8.neg"
-	OpcodeVecI16x8Q16mulrSatSName          = "i16x8.q15mulr_sat_s"
+	OpcodeVecI16x8Q15mulrSatSName          = "i16x8.q15mulr_sat_s"
 	OpcodeVecI16x8AllTrueName              = "i16x8.all_true"
 	OpcodeVecI16x8BitMaskName              = "i16x8.bitmask"
 	OpcodeVecI16x8NarrowI32x4SName         = "i16x8.narrow_i32x4_s"
@@ -1431,7 +1431,7 @@ var vectorInstructionName = map[OpcodeVec]string{
 	OpcodeVecI16x8ExtaddPairwiseI8x16U: OpcodeVecI16x8ExtaddPairwiseI8x16UName,
 	OpcodeVecI16x8Abs:                  OpcodeVecI16x8AbsName,
 	OpcodeVecI16x8Neg:                  OpcodeVecI16x8NegName,
-	OpcodeVecI16x8Q16mulrSatS:          OpcodeVecI16x8Q16mulrSatSName,
+	OpcodeVecI16x8Q15mulrSatS:          OpcodeVecI16x8Q15mulrSatSName,
 	OpcodeVecI16x8AllTrue:              OpcodeVecI16x8AllTrueName,
 	OpcodeVecI16x8BitMask:              OpcodeVecI16x8BitMaskName,
 	OpcodeVecI16x8NarrowI32x4S:         OpcodeVecI16x8NarrowI32x4SName,

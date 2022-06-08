@@ -1314,7 +1314,10 @@ func (m *Module) validateFunctionWithMaxStackValues(
 				OpcodeVecI8x16Abs, OpcodeVecI8x16Popcnt, OpcodeVecI16x8Abs, OpcodeVecI32x4Abs, OpcodeVecI64x2Abs,
 				OpcodeVecF32x4Abs, OpcodeVecF64x2Abs,
 				OpcodeVecF32x4Ceil, OpcodeVecF32x4Floor, OpcodeVecF32x4Trunc, OpcodeVecF32x4Nearest,
-				OpcodeVecF64x2Ceil, OpcodeVecF64x2Floor, OpcodeVecF64x2Trunc, OpcodeVecF64x2Nearest:
+				OpcodeVecF64x2Ceil, OpcodeVecF64x2Floor, OpcodeVecF64x2Trunc, OpcodeVecF64x2Nearest,
+				OpcodeVecI16x8ExtendLowI8x16S, OpcodeVecI16x8ExtendHighI8x16S, OpcodeVecI16x8ExtendLowI8x16U, OpcodeVecI16x8ExtendHighI8x16U,
+				OpcodeVecI32x4ExtendLowI16x8S, OpcodeVecI32x4ExtendHighI16x8S, OpcodeVecI32x4ExtendLowI16x8U, OpcodeVecI32x4ExtendHighI16x8U,
+				OpcodeVecI64x2ExtendLowI32x4S, OpcodeVecI64x2ExtendHighI32x4S, OpcodeVecI64x2ExtendLowI32x4U, OpcodeVecI64x2ExtendHighI32x4U:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeV128); err != nil {
 					return fmt.Errorf("cannot pop the operand for %s: %v", vectorInstructionName[vecOpcode], err)
 				}
@@ -1332,7 +1335,11 @@ func (m *Module) validateFunctionWithMaxStackValues(
 				OpcodeVecI16x8AvgrU,
 				OpcodeVecI32x4MinS, OpcodeVecI32x4MinU, OpcodeVecI32x4MaxS, OpcodeVecI32x4MaxU,
 				OpcodeVecF32x4Min, OpcodeVecF32x4Max, OpcodeVecF64x2Min, OpcodeVecF64x2Max,
-				OpcodeVecF32x4Pmin, OpcodeVecF32x4Pmax, OpcodeVecF64x2Pmin, OpcodeVecF64x2Pmax:
+				OpcodeVecF32x4Pmin, OpcodeVecF32x4Pmax, OpcodeVecF64x2Pmin, OpcodeVecF64x2Pmax,
+				OpcodeVecI16x8Q15mulrSatS,
+				OpcodeVecI16x8ExtMulLowI8x16S, OpcodeVecI16x8ExtMulHighI8x16S, OpcodeVecI16x8ExtMulLowI8x16U, OpcodeVecI16x8ExtMulHighI8x16U,
+				OpcodeVecI32x4ExtMulLowI16x8S, OpcodeVecI32x4ExtMulHighI16x8S, OpcodeVecI32x4ExtMulLowI16x8U, OpcodeVecI32x4ExtMulHighI16x8U,
+				OpcodeVecI64x2ExtMulLowI32x4S, OpcodeVecI64x2ExtMulHighI32x4S, OpcodeVecI64x2ExtMulLowI32x4U, OpcodeVecI64x2ExtMulHighI32x4U:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeV128); err != nil {
 					return fmt.Errorf("cannot pop the operand for %s: %v", vectorInstructionName[vecOpcode], err)
 				}

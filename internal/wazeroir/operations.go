@@ -378,9 +378,15 @@ func (o OperationKind) String() (ret string) {
 	case OperationKindV128Nearest:
 		ret = "V128Nearest"
 	case OperationKindV128Pmin:
-		return "V128Pmin"
+		ret = "V128Pmin"
 	case OperationKindV128Pmax:
-		return "V128Pmax"
+		ret = "V128Pmax"
+	case OperationKindV128Extend:
+		ret = "OperationKindV128Extend"
+	case OperationKindV128ExtMul:
+		ret = "OperationKindV128ExtMul"
+	case OperationKindV128Q15mulrSatS:
+		ret = "OperationKindV128Q15mulrSatS"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
@@ -519,6 +525,9 @@ const (
 	OperationKindV128Floor
 	OperationKindV128Trunc
 	OperationKindV128Nearest
+	OperationKindV128Extend
+	OperationKindV128ExtMul
+	OperationKindV128Q15mulrSatS
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
@@ -1867,4 +1876,42 @@ type OperationV128Nearest struct{ Shape Shape }
 // Kind implements Operation.Kind
 func (o *OperationV128Nearest) Kind() OperationKind {
 	return OperationKindV128Nearest
+}
+
+// OperationV128Extend implements Operation
+type OperationV128Extend struct {
+	// OriginShape is the shape of the original lanes for extension which is
+	// either ShapeI8x16, ShapeI16x8, or ShapeI32x4.
+	OriginShape Shape
+	Signed      bool
+	// UseLow true if it uses the lower bits of each lane for extension.
+	UseLow bool
+}
+
+// Kind implements Operation.Kind
+func (o *OperationV128Extend) Kind() OperationKind {
+	return OperationKindV128Extend
+}
+
+// OperationV128ExtMul implements Operation
+type OperationV128ExtMul struct {
+	// OriginShape is the shape of the original lanes for extension which is
+	// either ShapeI8x16, ShapeI16x8, or ShapeI32x4.
+	OriginShape Shape
+	Signed      bool
+	// UseLow true if it uses the lower bits of each lane for extension.
+	UseLow bool
+}
+
+// Kind implements Operation.Kind
+func (o *OperationV128ExtMul) Kind() OperationKind {
+	return OperationKindV128ExtMul
+}
+
+// OperationV128Q15mulrSatS implements Operation
+type OperationV128Q15mulrSatS struct{}
+
+// Kind implements Operation.Kind
+func (o *OperationV128Q15mulrSatS) Kind() OperationKind {
+	return OperationKindV128Q15mulrSatS
 }
