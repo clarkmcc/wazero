@@ -995,6 +995,18 @@ func InstructionName(instruction asm.Instruction) string {
 		return "ROUNDPS"
 	case ROUNDPD:
 		return "ROUNDPD"
+	case PALIGNR:
+		return "PALIGNR"
+	case PUNPCKLWD:
+		return "PUNPCKLWD"
+	case PUNPCKHWD:
+		return "PUNPCKHWD"
+	case PMULHUW:
+		return "PMULHUW"
+	case PMULDQ:
+		return "PMULDQ"
+	case PMULHRSW:
+		return "PMULHRSW"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }
