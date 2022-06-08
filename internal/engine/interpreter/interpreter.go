@@ -682,6 +682,19 @@ func (e *engine) lowerIR(ir *wazeroir.CompilationResult) (*code, error) {
 			op.b1 = o.Shape
 		case *wazeroir.OperationV128Nearest:
 			op.b1 = o.Shape
+		case *wazeroir.OperationV128Extend:
+			op.b1 = o.OriginShape
+			if o.Signed {
+				op.b2 = 1
+			}
+			op.b3 = o.UseLow
+		case *wazeroir.OperationV128ExtMul:
+			op.b1 = o.OriginShape
+			if o.Signed {
+				op.b2 = 1
+			}
+			op.b3 = o.UseLow
+		case *wazeroir.OperationV128Q15mulrSatS:
 		default:
 			panic(fmt.Errorf("BUG: unimplemented operation %s", op.kind.String()))
 		}
@@ -3638,6 +3651,40 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			}
 			ce.pushValue(lo)
 			ce.pushValue(hi)
+			frame.pc++
+		case wazeroir.OperationKindV128Extend:
+		case wazeroir.OperationKindV128ExtMul:
+		case wazeroir.OperationKindV128Q15mulrSatS:
+			x2hi, x2Lo := ce.popValue(), ce.popValue()
+			x1hi, x1Lo := ce.popValue(), ce.popValue()
+			var retLo, retHi uint64
+			for i := 0; i < 8; i++ {
+				var v, w uint16
+				if i < 4 {
+					v, w = uint16(x1Lo>>i*16), uint16(x2Lo>>i*16)
+				} else {
+					v, w = uint16(x1hi>>((i-4)*16)), uint16(x2hi>>((i-4)*16))
+				}
+
+				var uv uint64
+				// https://github.com/WebAssembly/spec/blob/main/proposals/simd/SIMD.md#saturating-integer-q-format-rounding-multiplication
+				if calc := ((int64(int16(v)) * int64(int16(w))) + 0x4000) >> 15; calc < math.MinInt16 {
+					uv = uint64(uint16(0x8000))
+				} else if calc > math.MaxInt16 {
+					uv = uint64(uint16(0x7fff))
+				} else {
+					uv = uint64(uint16(int16(calc)))
+				}
+
+				if i < 4 {
+					retLo |= uv << (i * 16)
+				} else {
+					retHi |= uv << ((i - 4) * 16)
+				}
+			}
+
+			ce.pushValue(retLo)
+			ce.pushValue(retHi)
 			frame.pc++
 		}
 	}
