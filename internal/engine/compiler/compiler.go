@@ -523,4 +523,22 @@ type compiler interface {
 	compileV128Max(*wazeroir.OperationV128Max) error
 	// compileV128AvgrU adds instructions which are equivalent to wasm.OpcodeVecI8x16AvgrUName.
 	compileV128AvgrU(*wazeroir.OperationV128AvgrU) error
+	// compileV128Pmin adds instructions which are equivalent to wasm.OpcodeVecXXXPmin.
+	// See wasm.OpcodeVecF32x4PminName wasm.OpcodeVecF64x2PminName
+	compileV128Pmin(*wazeroir.OperationV128Pmin) error
+	// compileV128Pmax adds instructions which are equivalent to wasm.OpcodeVecXXXPmax.
+	// See wasm.OpcodeVecF32x4PmaxName wasm.OpcodeVecF64x2PmaxName
+	compileV128Pmax(*wazeroir.OperationV128Pmax) error
+	// compileV128Ceil adds instructions which are equivalent to wasm.OpcodeVecXXXCeil.
+	// See wasm.OpcodeVecF32x4CeilName wasm.OpcodeVecF64x2CeilName
+	compileV128Ceil(*wazeroir.OperationV128Ceil) error
+	// compileV128Floor adds instructions which are equivalent to wasm.OpcodeVecXXXFloor.
+	// See wasm.OpcodeVecF32x4FloorName wasm.OpcodeVecF64x2Floor
+	compileV128Floor(*wazeroir.OperationV128Floor) error
+	// compileV128Trunc adds instructions which are equivalent to wasm.OpcodeVecXXXTrunc.
+	// See wasm.OpcodeVecF32x4TruncName wasm.OpcodeVecF64x2TruncName
+	compileV128Trunc(*wazeroir.OperationV128Trunc) error
+	// compileV128Nearest adds instructions which are equivalent to wasm.OpcodeVecXXXNearest.
+	// See wasm.OpcodeVecF32x4NearestName wasm.OpcodeVecF64x2NearestName
+	compileV128Nearest(*wazeroir.OperationV128Nearest) error
 }

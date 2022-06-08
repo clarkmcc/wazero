@@ -757,3 +757,33 @@ func (c *arm64Compiler) compileV128Max(o *wazeroir.OperationV128Max) error {
 func (c *arm64Compiler) compileV128AvgrU(o *wazeroir.OperationV128AvgrU) error {
 	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
 }
+
+// compileV128Pmin implements compiler.compileV128Pmin for arm64.
+func (c *arm64Compiler) compileV128Pmin(o *wazeroir.OperationV128Pmin) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Pmax implements compiler.compileV128Pmax for arm64.
+func (c *arm64Compiler) compileV128Pmax(o *wazeroir.OperationV128Pmax) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Ceil implements compiler.compileV128Ceil for arm64.
+func (c *arm64Compiler) compileV128Ceil(o *wazeroir.OperationV128Ceil) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Floor implements compiler.compileV128Floor for arm64.
+func (c *arm64Compiler) compileV128Floor(o *wazeroir.OperationV128Floor) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Trunc implements compiler.compileV128Trunc for arm64.
+func (c *arm64Compiler) compileV128Trunc(o *wazeroir.OperationV128Trunc) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Nearest implements compiler.compileV128Nearest for arm64.
+func (c *arm64Compiler) compileV128Nearest(o *wazeroir.OperationV128Nearest) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}

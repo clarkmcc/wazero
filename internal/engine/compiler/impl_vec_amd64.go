@@ -1993,3 +1993,33 @@ func (c *amd64Compiler) compileV128AvgrU(o *wazeroir.OperationV128AvgrU) error {
 	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
+
+// compileV128Pmin implements compiler.compileV128Pmin for amd64.
+func (c *amd64Compiler) compileV128Pmin(*wazeroir.OperationV128Pmin) error {
+	return nil
+}
+
+// compileV128Pmax implements compiler.compileV128Pmax for amd64.
+func (c *amd64Compiler) compileV128Pmax(*wazeroir.OperationV128Pmax) error {
+	return nil
+}
+
+// compileV128Ceil implements compiler.compileV128Ceil for amd64.
+func (c *amd64Compiler) compileV128Ceil(*wazeroir.OperationV128Ceil) error {
+	return nil
+}
+
+// compileV128Floor implements compiler.compileV128Floor for amd64.
+func (c *amd64Compiler) compileV128Floor(*wazeroir.OperationV128Floor) error {
+	return nil
+}
+
+// compileV128Trunc implements compiler.compileV128Trunc for amd64.
+func (c *amd64Compiler) compileV128Trunc(*wazeroir.OperationV128Trunc) error {
+	return nil
+}
+
+// compileV128Nearest implements compiler.compileV128Nearest for amd64.
+func (c *amd64Compiler) compileV128Nearest(*wazeroir.OperationV128Nearest) error {
+	return nil
+}
