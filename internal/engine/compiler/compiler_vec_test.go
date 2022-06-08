@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"encoding/binary"
+	"github.com/tetratelabs/wazero/internal/moremath"
 	"math"
 	"runtime"
 	"testing"
@@ -4665,6 +4666,262 @@ func TestCompiler_compileV128Popcnt(t *testing.T) {
 			binary.LittleEndian.PutUint64(actual[:8], lo)
 			binary.LittleEndian.PutUint64(actual[8:], hi)
 			require.Equal(t, tc.exp, actual)
+		})
+	}
+}
+
+func TestCompiler_compileV128Round(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name  string
+		shape wazeroir.Shape
+		kind  wazeroir.OperationKind
+		v     [16]byte
+	}{
+		{
+			name:  "f32 ceil",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Ceil,
+			v:     f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 ceil",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Ceil,
+			v:     f32x4(math.Pi, -1231231.123, float32(math.NaN()), float32(math.Inf(-1))),
+		},
+		{
+			name:  "f64 ceil",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Ceil,
+			v:     f64x2(1.231, -123.12313),
+		},
+		{
+			name:  "f64 ceil",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Ceil,
+			v:     f64x2(math.Inf(1), math.NaN()),
+		},
+		{
+			name:  "f64 ceil",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Ceil,
+			v:     f64x2(math.Inf(-1), math.Pi),
+		},
+		{
+			name:  "f32 floor",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Floor,
+			v:     f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 floor",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Floor,
+			v:     f32x4(math.Pi, -1231231.123, float32(math.NaN()), float32(math.Inf(-1))),
+		},
+		{
+			name:  "f64 floor",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Floor,
+			v:     f64x2(1.231, -123.12313),
+		},
+		{
+			name:  "f64 floor",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Floor,
+			v:     f64x2(math.Inf(1), math.NaN()),
+		},
+		{
+			name:  "f64 floor",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Floor,
+			v:     f64x2(math.Inf(-1), math.Pi),
+		},
+		{
+			name:  "f32 trunc",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Trunc,
+			v:     f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 trunc",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Trunc,
+			v:     f32x4(math.Pi, -1231231.123, float32(math.NaN()), float32(math.Inf(-1))),
+		},
+		{
+			name:  "f64 trunc",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Trunc,
+			v:     f64x2(1.231, -123.12313),
+		},
+		{
+			name:  "f64 trunc",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Trunc,
+			v:     f64x2(math.Inf(1), math.NaN()),
+		},
+		{
+			name:  "f64 trunc",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Trunc,
+			v:     f64x2(math.Inf(-1), math.Pi),
+		},
+		{
+			name:  "f32 nearest",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Nearest,
+			v:     f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 nearest",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Nearest,
+			v:     f32x4(math.Pi, -1231231.123, float32(math.NaN()), float32(math.Inf(-1))),
+		},
+		{
+			name:  "f64 nearest",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Nearest,
+			v:     f64x2(1.231, -123.12313),
+		},
+		{
+			name:  "f64 nearest",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Nearest,
+			v:     f64x2(math.Inf(1), math.NaN()),
+		},
+		{
+			name:  "f64 nearest",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Nearest,
+			v:     f64x2(math.Inf(-1), math.Pi),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			is32bit := tc.shape == wazeroir.ShapeF32x4
+			switch tc.kind {
+			case wazeroir.OperationKindV128Ceil:
+				err = compiler.compileV128Ceil(&wazeroir.OperationV128Ceil{Shape: tc.shape})
+			case wazeroir.OperationKindV128Floor:
+				err = compiler.compileV128Floor(&wazeroir.OperationV128Floor{Shape: tc.shape})
+			case wazeroir.OperationKindV128Trunc:
+				err = compiler.compileV128Trunc(&wazeroir.OperationV128Trunc{Shape: tc.shape})
+			case wazeroir.OperationKindV128Nearest:
+				err = compiler.compileV128Nearest(&wazeroir.OperationV128Nearest{Shape: tc.shape})
+			}
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+
+			if is32bit {
+				actualFs := [4]float32{
+					math.Float32frombits(uint32(lo)),
+					math.Float32frombits(uint32(lo >> 32)),
+					math.Float32frombits(uint32(hi)),
+					math.Float32frombits(uint32(hi >> 32))}
+				f1Original, f2Original, f3Original, f4Original :=
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.v[:4])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.v[4:8])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.v[8:12])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.v[12:]))
+
+				var expFs [4]float32
+				switch tc.kind {
+				case wazeroir.OperationKindV128Ceil:
+					expFs[0] = float32(math.Ceil(float64(f1Original)))
+					expFs[1] = float32(math.Ceil(float64(f2Original)))
+					expFs[2] = float32(math.Ceil(float64(f3Original)))
+					expFs[3] = float32(math.Ceil(float64(f4Original)))
+				case wazeroir.OperationKindV128Floor:
+					expFs[0] = float32(math.Floor(float64(f1Original)))
+					expFs[1] = float32(math.Floor(float64(f2Original)))
+					expFs[2] = float32(math.Floor(float64(f3Original)))
+					expFs[3] = float32(math.Floor(float64(f4Original)))
+				case wazeroir.OperationKindV128Trunc:
+					expFs[0] = float32(math.Trunc(float64(f1Original)))
+					expFs[1] = float32(math.Trunc(float64(f2Original)))
+					expFs[2] = float32(math.Trunc(float64(f3Original)))
+					expFs[3] = float32(math.Trunc(float64(f4Original)))
+				case wazeroir.OperationKindV128Nearest:
+					expFs[0] = moremath.WasmCompatNearestF32(f1Original)
+					expFs[1] = moremath.WasmCompatNearestF32(f2Original)
+					expFs[2] = moremath.WasmCompatNearestF32(f3Original)
+					expFs[3] = moremath.WasmCompatNearestF32(f4Original)
+				}
+
+				for i := range expFs {
+					exp, actual := expFs[i], actualFs[i]
+					if math.IsNaN(float64(exp)) {
+						require.True(t, math.IsNaN(float64(actual)))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			} else {
+				actualFs := [2]float64{math.Float64frombits(lo), math.Float64frombits(hi)}
+				f1Original, f2Original :=
+					math.Float64frombits(binary.LittleEndian.Uint64(tc.v[:8])), math.Float64frombits(binary.LittleEndian.Uint64(tc.v[8:]))
+
+				var expFs [2]float64
+				switch tc.kind {
+				case wazeroir.OperationKindV128Ceil:
+					expFs[0] = math.Ceil(f1Original)
+					expFs[1] = math.Ceil(f2Original)
+				case wazeroir.OperationKindV128Floor:
+					expFs[0] = math.Floor(f1Original)
+					expFs[1] = math.Floor(f2Original)
+				case wazeroir.OperationKindV128Trunc:
+					expFs[0] = math.Trunc(f1Original)
+					expFs[1] = math.Trunc(f2Original)
+				case wazeroir.OperationKindV128Nearest:
+					expFs[0] = moremath.WasmCompatNearestF64(f1Original)
+					expFs[1] = moremath.WasmCompatNearestF64(f2Original)
+				}
+
+				for i := range expFs {
+					exp, actual := expFs[i], actualFs[i]
+					if math.IsNaN(exp) {
+						require.True(t, math.IsNaN(actual))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			}
 		})
 	}
 }

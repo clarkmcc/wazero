@@ -2053,29 +2053,33 @@ func (c *amd64Compiler) compileV128Pmax(o *wazeroir.OperationV128Pmax) error {
 
 // compileV128Ceil implements compiler.compileV128Ceil for amd64.
 func (c *amd64Compiler) compileV128Ceil(o *wazeroir.OperationV128Ceil) error {
-	const roundArgCeil = 0x2
-	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgCeil)
+	// See https://www.felixcloutier.com/x86/roundpd
+	const roundModeCeil = 0x2
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundModeCeil)
 }
 
 // compileV128Floor implements compiler.compileV128Floor for amd64.
 func (c *amd64Compiler) compileV128Floor(o *wazeroir.OperationV128Floor) error {
-	const roundArgFloor = 0x1
-	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgFloor)
+	// See https://www.felixcloutier.com/x86/roundpd
+	const roundModeFloor = 0x1
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundModeFloor)
 }
 
 // compileV128Trunc implements compiler.compileV128Trunc for amd64.
 func (c *amd64Compiler) compileV128Trunc(o *wazeroir.OperationV128Trunc) error {
-	const roundArgTrunc = 0x3
-	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgTrunc)
+	// See https://www.felixcloutier.com/x86/roundpd
+	const roundModeTrunc = 0x3
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundModeTrunc)
 }
 
 // compileV128Nearest implements compiler.compileV128Nearest for amd64.
 func (c *amd64Compiler) compileV128Nearest(o *wazeroir.OperationV128Nearest) error {
-	const roundArgNearest = 0x0
-	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundArgNearest)
+	// See https://www.felixcloutier.com/x86/roundpd
+	const roundModeNearest = 0x0
+	return c.compileV128RoundImpl(o.Shape == wazeroir.ShapeF32x4, roundModeNearest)
 }
 
-func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, arg byte) error {
+func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, mode byte) error {
 	v := c.locationStack.popV128()
 	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
 		return err
@@ -2089,7 +2093,7 @@ func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, arg byte) error {
 		round = amd64.ROUNDPD
 	}
 
-	c.assembler.CompileRegisterToRegisterWithArg(round, vr, vr, arg)
+	c.assembler.CompileRegisterToRegisterWithArg(round, vr, vr, mode)
 	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
