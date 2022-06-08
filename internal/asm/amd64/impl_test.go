@@ -1260,8 +1260,38 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			},
 			exp: []byte{0x66, 0x44, 0xf, 0x38, 0xb, 0xe9},
 		},
-	}
 
+		{
+			name: "pmovsxbw xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVSXBW, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x20, 0xea},
+		},
+		{
+			name: "pmovsxwd xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVSXWD, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x23, 0xea},
+		},
+		{
+			name: "pmovsxdq xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVSXDQ, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x25, 0xea},
+		},
+		{
+			name: "pmovzxbw xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVZXBW, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x30, 0xea},
+		},
+		{
+			name: "pmovzxwd xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVZXWD, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x33, 0xea},
+		},
+		{
+			name: "pmovzxdq xmm5, xmm10",
+			n:    &NodeImpl{Instruction: PMOVZXDQ, SrcReg: RegX10, DstReg: RegX5},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x35, 0xea},
+		},
+	}
 	for _, tt := range tests {
 		tc := tt
 		t.Run(tc.name, func(t *testing.T) {

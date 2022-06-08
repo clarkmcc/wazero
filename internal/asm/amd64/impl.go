@@ -1400,6 +1400,18 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	PMULDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x28}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/pmulhrsw
 	PMULHRSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x0b}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovsx
+	PMOVSXBW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x20}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovsx
+	PMOVSXWD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x23}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovsx
+	PMOVSXDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x25}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovzx
+	PMOVZXBW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x30}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovzx
+	PMOVZXWD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x33}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/pmovzx
+	PMOVZXDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x35}, requireSrcFloat: true, requireDstFloat: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {

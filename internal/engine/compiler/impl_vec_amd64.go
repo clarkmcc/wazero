@@ -2101,7 +2101,45 @@ func (c *amd64Compiler) compileV128RoundImpl(is32bit bool, mode byte) error {
 }
 
 // compileV128Extend implements compiler.compileV128Extend for amd64.
-func (c *amd64Compiler) compileV128Extend(*wazeroir.OperationV128Extend) error {
+func (c *amd64Compiler) compileV128Extend(o *wazeroir.OperationV128Extend) error {
+
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	if !o.UseLow {
+		// We have to shift the higher 64-bits into the lower ones before the actual extending instruction.
+		// Shifting right by 0x8 * 8 = 64bits and concatenate itself.
+		// See https://www.felixcloutier.com/x86/palignr
+		c.assembler.CompileRegisterToRegisterWithArg(amd64.PALIGNR, v.register, v.register, 0x8)
+	}
+
+	var extend asm.Instruction
+	switch o.OriginShape {
+	case wazeroir.ShapeI8x16:
+		if o.Signed {
+			extend = amd64.PMOVSXBW
+		} else {
+			extend = amd64.PMOVZXBW
+		}
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			extend = amd64.PMOVSXWD
+		} else {
+			extend = amd64.PMOVZXWD
+		}
+	case wazeroir.ShapeI32x4:
+		if o.Signed {
+			extend = amd64.PMOVSXDQ
+		} else {
+			extend = amd64.PMOVZXDQ
+		}
+	}
+
+	c.assembler.CompileRegisterToRegister(extend, vr, vr)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 

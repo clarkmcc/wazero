@@ -3,7 +3,6 @@ package spectest
 import (
 	"embed"
 	"path"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -33,7 +32,7 @@ func TestCompiler(t *testing.T) {
 				"simd_load64_lane.json", "simd_load8_lane.json", "simd_lane.json", "simd_load_extend.json",
 				"simd_load_splat.json", "simd_load_zero.json", "simd_store.json", "simd_store16_lane.json",
 				"simd_store32_lane.json", "simd_store64_lane.json", "simd_store8_lane.json":
-				return true
+				return false
 			case "simd_bitwise.json", "simd_boolean.json", "simd_bit_shift.json",
 				"simd_i8x16_cmp.json", "simd_i16x8_cmp.json", "simd_i32x4_cmp.json", "simd_i64x2_cmp.json",
 				"simd_f32x4_cmp.json", "simd_f64x2_cmp.json", "simd_f32x4_arith.json", "simd_f64x2_arith.json", "simd_i16x8_arith.json", "simd_i64x2_arith.json",
@@ -42,12 +41,14 @@ func TestCompiler(t *testing.T) {
 				"simd_f64x2.json", "simd_f32x4.json", "simd_f32x4_rounding.json", "simd_f64x2_rounding.json",
 				"simd_f64x2_pmin_pmax.json", "simd_f32x4_pmin_pmax.json":
 				// TODO: implement on arm64.
-				return runtime.GOARCH == "amd64"
+				return false
+			case "simd_int_to_int_extend.json":
+				return true
 			default:
 				return false // others not supported, yet!
 			}
 		}
-		return true
+		return false
 	})
 }
 
