@@ -4925,3 +4925,264 @@ func TestCompiler_compileV128Round(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128_Pmax_Pmin(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name        string
+		shape       wazeroir.Shape
+		kind        wazeroir.OperationKind
+		x1, x2, exp [16]byte
+	}{
+		{
+			name:  "f32 pmin",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f32x4(float32(math.Inf(1)), -1.5, 1123.5, float32(math.Inf(1))),
+			x2:    f32x4(1.4, float32(math.Inf(-1)), -1231.5, float32(math.Inf(1))),
+			exp:   f32x4(1.4, float32(math.Inf(-1)), -1231.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmin",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			x2:    f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f32 pmin",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+			x2:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			exp:   f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmin",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			x2:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			exp:   f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmin",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			x2:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f64 pmin",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f64x2(math.Inf(1), -123123.1231),
+			x2:    f64x2(-123123.1, math.Inf(-1)),
+			exp:   f64x2(-123123.1, math.Inf(-1)),
+		},
+		{
+			name:  "f64 pmin",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f64x2(math.NaN(), math.NaN()),
+			x2:    f64x2(-123123.1, 1.0),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name:  "f64 pmin",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f64x2(-123123.1, 1.0),
+			x2:    f64x2(math.NaN(), math.NaN()),
+			exp:   f64x2(-123123.1, 1.0),
+		},
+		{
+			name:  "f64 pmin",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f64x2(math.NaN(), math.NaN()),
+			x2:    f64x2(math.Inf(1), math.Inf(-1)),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name:  "f64 pmin",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmin,
+			x1:    f64x2(math.Inf(1), math.Inf(-1)),
+			x2:    f64x2(math.NaN(), math.NaN()),
+			exp:   f64x2(math.Inf(1), math.Inf(-1)),
+		},
+		{
+			name:  "f32 pmax",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f32x4(float32(math.Inf(1)), -1.5, 1123.5, float32(math.Inf(1))),
+			x2:    f32x4(1.4, float32(math.Inf(-1)), -1231.5, float32(math.Inf(1))),
+			exp:   f32x4(float32(math.Inf(1)), -1.5, 1123.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmax",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			x2:    f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f32 pmax",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+			x2:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			exp:   f32x4(1.4, -1.5, 1.5, float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmax",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			x2:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			exp:   f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+		},
+		{
+			name:  "f32 pmax",
+			shape: wazeroir.ShapeF32x4,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+			x2:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(1))),
+			exp:   f32x4(float32(math.NaN()), float32(math.NaN()), float32(math.NaN()), float32(math.NaN())),
+		},
+		{
+			name:  "f64 pmax",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f64x2(math.Inf(1), -123123.1231),
+			x2:    f64x2(-123123.1, math.Inf(-1)),
+			exp:   f64x2(math.Inf(1), -123123.1231),
+		},
+		{
+			name:  "f64 pmax",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f64x2(math.NaN(), math.NaN()),
+			x2:    f64x2(-123123.1, 1.0),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name:  "f64 pmax",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f64x2(-123123.1, 1.0),
+			x2:    f64x2(math.NaN(), math.NaN()),
+			exp:   f64x2(-123123.1, 1.0),
+		},
+		{
+			name:  "f64 pmax",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f64x2(math.NaN(), math.NaN()),
+			x2:    f64x2(math.Inf(1), math.Inf(-1)),
+			exp:   f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name:  "f64 pmax",
+			shape: wazeroir.ShapeF64x2,
+			kind:  wazeroir.OperationKindV128Pmax,
+			x1:    f64x2(math.Inf(1), math.Inf(-1)),
+			x2:    f64x2(math.NaN(), math.NaN()),
+			exp:   f64x2(math.Inf(1), math.Inf(-1)),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			is32bit := tc.shape == wazeroir.ShapeF32x4
+			switch tc.kind {
+			case wazeroir.OperationKindV128Pmin:
+				err = compiler.compileV128Pmin(&wazeroir.OperationV128Pmin{Shape: tc.shape})
+			case wazeroir.OperationKindV128Pmax:
+				err = compiler.compileV128Pmax(&wazeroir.OperationV128Pmax{Shape: tc.shape})
+			}
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+
+			if is32bit {
+				actualFs := [4]float32{
+					math.Float32frombits(uint32(lo)),
+					math.Float32frombits(uint32(lo >> 32)),
+					math.Float32frombits(uint32(hi)),
+					math.Float32frombits(uint32(hi >> 32))}
+				expFs := [4]float32{
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[:4])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[4:8])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[8:12])),
+					math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[12:])),
+				}
+				for i := range expFs {
+					exp, actual := expFs[i], actualFs[i]
+					if math.IsNaN(float64(exp)) {
+						require.True(t, math.IsNaN(float64(actual)))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			} else {
+				actualFs := [2]float64{
+					math.Float64frombits(lo), math.Float64frombits(hi),
+				}
+				expFs := [2]float64{
+					math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[:8])),
+					math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[8:])),
+				}
+				for i := range expFs {
+					exp, actual := expFs[i], actualFs[i]
+					if math.IsNaN(exp) {
+						require.True(t, math.IsNaN(actual))
+					} else {
+						require.Equal(t, exp, actual)
+					}
+				}
+			}
+		})
+	}
+}
