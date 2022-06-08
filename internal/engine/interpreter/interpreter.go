@@ -670,6 +670,18 @@ func (e *engine) lowerIR(ir *wazeroir.CompilationResult) (*code, error) {
 			op.b3 = o.Signed
 		case *wazeroir.OperationV128AvgrU:
 			op.b1 = o.Shape
+		case *wazeroir.OperationV128Pmin:
+			op.b1 = o.Shape
+		case *wazeroir.OperationV128Pmax:
+			op.b1 = o.Shape
+		case *wazeroir.OperationV128Ceil:
+			op.b1 = o.Shape
+		case *wazeroir.OperationV128Floor:
+			op.b1 = o.Shape
+		case *wazeroir.OperationV128Trunc:
+			op.b1 = o.Shape
+		case *wazeroir.OperationV128Nearest:
+			op.b1 = o.Shape
 		default:
 			panic(fmt.Errorf("BUG: unimplemented operation %s", op.kind.String()))
 		}
@@ -1409,7 +1421,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				ce.pushValue(uint64(math.Float32bits(float32(v))))
 			} else {
 				// Float64
-				v := math.Ceil(float64(math.Float64frombits(ce.popValue())))
+				v := math.Ceil(math.Float64frombits(ce.popValue()))
 				ce.pushValue(math.Float64bits(v))
 			}
 			frame.pc++
@@ -1420,7 +1432,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				ce.pushValue(uint64(math.Float32bits(float32(v))))
 			} else {
 				// Float64
-				v := math.Floor(float64(math.Float64frombits(ce.popValue())))
+				v := math.Floor(math.Float64frombits(ce.popValue()))
 				ce.pushValue(math.Float64bits(v))
 			}
 			frame.pc++
@@ -1431,7 +1443,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				ce.pushValue(uint64(math.Float32bits(float32(v))))
 			} else {
 				// Float64
-				v := math.Trunc(float64(math.Float64frombits(ce.popValue())))
+				v := math.Trunc(math.Float64frombits(ce.popValue()))
 				ce.pushValue(math.Float64bits(v))
 			}
 			frame.pc++
@@ -1453,7 +1465,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				ce.pushValue(uint64(math.Float32bits(float32(v))))
 			} else {
 				// Float64
-				v := math.Sqrt(float64(math.Float64frombits(ce.popValue())))
+				v := math.Sqrt(math.Float64frombits(ce.popValue()))
 				ce.pushValue(math.Float64bits(v))
 			}
 			frame.pc++
@@ -3491,9 +3503,185 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			ce.pushValue(retLo)
 			ce.pushValue(retHi)
 			frame.pc++
+		case wazeroir.OperationKindV128Pmin:
+			x2hi, x2lo := ce.popValue(), ce.popValue()
+			x1hi, x1lo := ce.popValue(), ce.popValue()
+			var retLo, retHi uint64
+			if op.b1 == wazeroir.ShapeF32x4 {
+				if flt32(math.Float32frombits(uint32(x2lo)), math.Float32frombits(uint32(x1lo))) {
+					retLo = x2lo & 0x00000000_ffffffff
+				} else {
+					retLo = x1lo & 0x00000000_ffffffff
+				}
+				if flt32(math.Float32frombits(uint32(x2lo>>32)), math.Float32frombits(uint32(x1lo>>32))) {
+					retLo |= x2lo & 0xffffffff_00000000
+				} else {
+					retLo |= x1lo & 0xffffffff_00000000
+				}
+				if flt32(math.Float32frombits(uint32(x2hi)), math.Float32frombits(uint32(x1hi))) {
+					retHi = x2hi & 0x00000000_ffffffff
+				} else {
+					retHi = x1hi & 0x00000000_ffffffff
+				}
+				if flt32(math.Float32frombits(uint32(x2hi>>32)), math.Float32frombits(uint32(x1hi>>32))) {
+					retHi |= x2hi & 0xffffffff_00000000
+				} else {
+					retHi |= x1hi & 0xffffffff_00000000
+				}
+			} else {
+				if flt64(math.Float64frombits(x2lo), math.Float64frombits(x1lo)) {
+					retLo = x2lo
+				} else {
+					retLo = x1lo
+				}
+				if flt64(math.Float64frombits(x2hi), math.Float64frombits(x1hi)) {
+					retHi = x2hi
+				} else {
+					retHi = x1hi
+				}
+			}
+			ce.pushValue(retLo)
+			ce.pushValue(retHi)
+			frame.pc++
+		case wazeroir.OperationKindV128Pmax:
+			x2hi, x2lo := ce.popValue(), ce.popValue()
+			x1hi, x1lo := ce.popValue(), ce.popValue()
+			var retLo, retHi uint64
+			if op.b1 == wazeroir.ShapeF32x4 {
+				if flt32(math.Float32frombits(uint32(x1lo)), math.Float32frombits(uint32(x2lo))) {
+					retLo = x2lo & 0x00000000_ffffffff
+				} else {
+					retLo = x1lo & 0x00000000_ffffffff
+				}
+				if flt32(math.Float32frombits(uint32(x1lo>>32)), math.Float32frombits(uint32(x2lo>>32))) {
+					retLo |= x2lo & 0xffffffff_00000000
+				} else {
+					retLo |= x1lo & 0xffffffff_00000000
+				}
+				if flt32(math.Float32frombits(uint32(x1hi)), math.Float32frombits(uint32(x2hi))) {
+					retHi = x2hi & 0x00000000_ffffffff
+				} else {
+					retHi = x1hi & 0x00000000_ffffffff
+				}
+				if flt32(math.Float32frombits(uint32(x1hi>>32)), math.Float32frombits(uint32(x2hi>>32))) {
+					retHi |= x2hi & 0xffffffff_00000000
+				} else {
+					retHi |= x1hi & 0xffffffff_00000000
+				}
+			} else {
+				if flt64(math.Float64frombits(x1lo), math.Float64frombits(x2lo)) {
+					retLo = x2lo
+				} else {
+					retLo = x1lo
+				}
+				if flt64(math.Float64frombits(x1hi), math.Float64frombits(x2hi)) {
+					retHi = x2hi
+				} else {
+					retHi = x1hi
+				}
+			}
+			ce.pushValue(retLo)
+			ce.pushValue(retHi)
+			frame.pc++
+		case wazeroir.OperationKindV128Ceil:
+			hi, lo := ce.popValue(), ce.popValue()
+			if op.b1 == wazeroir.ShapeF32x4 {
+				lo = uint64(math.Float32bits(float32(math.Ceil(float64(math.Float32frombits(uint32(lo))))))) |
+					(uint64(math.Float32bits(float32(math.Ceil(float64(math.Float32frombits(uint32(lo>>32))))))) << 32)
+				hi = uint64(math.Float32bits(float32(math.Ceil(float64(math.Float32frombits(uint32(hi))))))) |
+					(uint64(math.Float32bits(float32(math.Ceil(float64(math.Float32frombits(uint32(hi>>32))))))) << 32)
+			} else {
+				lo = math.Float64bits(math.Ceil(math.Float64frombits(lo)))
+				hi = math.Float64bits(math.Ceil(math.Float64frombits(hi)))
+			}
+			ce.pushValue(lo)
+			ce.pushValue(hi)
+			frame.pc++
+		case wazeroir.OperationKindV128Floor:
+			hi, lo := ce.popValue(), ce.popValue()
+			if op.b1 == wazeroir.ShapeF32x4 {
+				lo = uint64(math.Float32bits(float32(math.Floor(float64(math.Float32frombits(uint32(lo))))))) |
+					(uint64(math.Float32bits(float32(math.Floor(float64(math.Float32frombits(uint32(lo>>32))))))) << 32)
+				hi = uint64(math.Float32bits(float32(math.Floor(float64(math.Float32frombits(uint32(hi))))))) |
+					(uint64(math.Float32bits(float32(math.Floor(float64(math.Float32frombits(uint32(hi>>32))))))) << 32)
+			} else {
+				lo = math.Float64bits(math.Floor(math.Float64frombits(lo)))
+				hi = math.Float64bits(math.Floor(math.Float64frombits(hi)))
+			}
+			ce.pushValue(lo)
+			ce.pushValue(hi)
+			frame.pc++
+		case wazeroir.OperationKindV128Trunc:
+			hi, lo := ce.popValue(), ce.popValue()
+			if op.b1 == wazeroir.ShapeF32x4 {
+				lo = uint64(math.Float32bits(float32(math.Trunc(float64(math.Float32frombits(uint32(lo))))))) |
+					(uint64(math.Float32bits(float32(math.Trunc(float64(math.Float32frombits(uint32(lo>>32))))))) << 32)
+				hi = uint64(math.Float32bits(float32(math.Trunc(float64(math.Float32frombits(uint32(hi))))))) |
+					(uint64(math.Float32bits(float32(math.Trunc(float64(math.Float32frombits(uint32(hi>>32))))))) << 32)
+			} else {
+				lo = math.Float64bits(math.Trunc(math.Float64frombits(lo)))
+				hi = math.Float64bits(math.Trunc(math.Float64frombits(hi)))
+			}
+			ce.pushValue(lo)
+			ce.pushValue(hi)
+			frame.pc++
+		case wazeroir.OperationKindV128Nearest:
+			hi, lo := ce.popValue(), ce.popValue()
+			if op.b1 == wazeroir.ShapeF32x4 {
+				lo = uint64(math.Float32bits(moremath.WasmCompatNearestF32(math.Float32frombits(uint32(lo))))) |
+					(uint64(math.Float32bits(moremath.WasmCompatNearestF32(math.Float32frombits(uint32(lo>>32))))) << 32)
+				hi = uint64(math.Float32bits(moremath.WasmCompatNearestF32(math.Float32frombits(uint32(hi))))) |
+					(uint64(math.Float32bits(moremath.WasmCompatNearestF32(math.Float32frombits(uint32(hi>>32))))) << 32)
+			} else {
+				lo = math.Float64bits(moremath.WasmCompatNearestF64(math.Float64frombits(lo)))
+				hi = math.Float64bits(moremath.WasmCompatNearestF64(math.Float64frombits(hi)))
+			}
+			ce.pushValue(lo)
+			ce.pushValue(hi)
+			frame.pc++
 		}
 	}
 	ce.popFrame()
+}
+
+// https://www.w3.org/TR/2022/WD-wasm-core-2-20220419/exec/numerics.html#xref-exec-numerics-op-flt-mathrm-flt-n-z-1-z-2
+func flt32(z1, z2 float32) bool {
+	if z1 != z1 || z2 != z2 {
+		return false
+	} else if z1 == z2 {
+		return false
+	} else if math.IsInf(float64(z1), 1) {
+		return false
+	} else if math.IsInf(float64(z1), -1) {
+		return true
+	} else if math.IsInf(float64(z2), 1) {
+		return true
+	} else if math.IsInf(float64(z2), -1) {
+		return false
+	} else if z1 == 0 && z2 == 0 {
+		return false
+	}
+	return z1 < z2
+}
+
+// https://www.w3.org/TR/2022/WD-wasm-core-2-20220419/exec/numerics.html#xref-exec-numerics-op-flt-mathrm-flt-n-z-1-z-2
+func flt64(z1, z2 float64) bool {
+	if z1 != z1 || z2 != z2 {
+		return false
+	} else if z1 == z2 {
+		return false
+	} else if math.IsInf(z1, 1) {
+		return false
+	} else if math.IsInf(z1, -1) {
+		return true
+	} else if math.IsInf(z2, 1) {
+		return true
+	} else if math.IsInf(z2, -1) {
+		return false
+	} else if z1 == 0 && z2 == 0 {
+		return false
+	}
+	return z1 < z2
 }
 
 func i8RoundingAverage(v1, v2 byte) byte {

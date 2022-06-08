@@ -64,7 +64,8 @@ func TestInterpreter(t *testing.T) {
 				"simd_f32x4_arith.json", "simd_f64x2_arith.json", "simd_i16x8_arith.json", "simd_i64x2_arith.json",
 				"simd_i32x4_arith.json", "simd_i8x16_arith.json", "simd_i16x8_sat_arith.json", "simd_i8x16_sat_arith.json",
 				"simd_i16x8_arith2.json", "simd_i8x16_arith2.json", "simd_i32x4_arith2.json", "simd_i64x2_arith2.json",
-				"simd_f64x2.json", "simd_f32x4.json":
+				"simd_f64x2.json", "simd_f32x4.json", "simd_f32x4_rounding.json", "simd_f64x2_rounding.json",
+				"simd_f64x2_pmin_pmax.json", "simd_f32x4_pmin_pmax.json":
 				return true
 			default:
 				return false // others not supported, yet!
