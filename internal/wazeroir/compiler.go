@@ -2730,19 +2730,19 @@ operatorSwitch:
 			)
 		case wasm.OpcodeVecI16x8ExtaddPairwiseI8x16S:
 			c.emit(
-				&OperationV128ExtAddPairWise{OriginShape: ShapeI8x16, Signed: true},
+				&OperationV128ExtAddPairwise{OriginShape: ShapeI8x16, Signed: true},
 			)
 		case wasm.OpcodeVecI16x8ExtaddPairwiseI8x16U:
 			c.emit(
-				&OperationV128ExtAddPairWise{OriginShape: ShapeI8x16, Signed: false},
+				&OperationV128ExtAddPairwise{OriginShape: ShapeI8x16, Signed: false},
 			)
 		case wasm.OpcodeVecI32x4ExtaddPairwiseI16x8S:
 			c.emit(
-				&OperationV128ExtAddPairWise{OriginShape: ShapeI16x8, Signed: true},
+				&OperationV128ExtAddPairwise{OriginShape: ShapeI16x8, Signed: true},
 			)
 		case wasm.OpcodeVecI32x4ExtaddPairwiseI16x8U:
 			c.emit(
-				&OperationV128ExtAddPairWise{OriginShape: ShapeI16x8, Signed: false},
+				&OperationV128ExtAddPairwise{OriginShape: ShapeI16x8, Signed: false},
 			)
 		case wasm.OpcodeVecF64x2PromoteLowF32x4Zero:
 			c.emit(

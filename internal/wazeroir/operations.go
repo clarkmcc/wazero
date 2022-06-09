@@ -387,8 +387,8 @@ func (o OperationKind) String() (ret string) {
 		ret = "V128ExtMul"
 	case OperationKindV128Q15mulrSatS:
 		ret = "V128Q15mulrSatS"
-	case OperationKindV128ExtAddPairWise:
-		ret = "V128ExtAddPairWise"
+	case OperationKindV128ExtAddPairwise:
+		ret = "V128ExtAddPairwise"
 	case OperationKindV128FloatPromote:
 		ret = "V128FloatPromote"
 	case OperationKindV128FloatDemote:
@@ -542,7 +542,7 @@ const (
 	OperationKindV128Extend
 	OperationKindV128ExtMul
 	OperationKindV128Q15mulrSatS
-	OperationKindV128ExtAddPairWise
+	OperationKindV128ExtAddPairwise
 	OperationKindV128FloatPromote
 	OperationKindV128FloatDemote
 	OperationKindV128FConvertFromI
@@ -1937,8 +1937,8 @@ func (o *OperationV128Q15mulrSatS) Kind() OperationKind {
 	return OperationKindV128Q15mulrSatS
 }
 
-// OperationV128ExtAddPairWise implements Operation.
-type OperationV128ExtAddPairWise struct {
+// OperationV128ExtAddPairwise implements Operation.
+type OperationV128ExtAddPairwise struct {
 	// OriginShape is the shape of the original lanes for extension which is
 	// either ShapeI8x16, or ShapeI16x8.
 	OriginShape Shape
@@ -1946,8 +1946,8 @@ type OperationV128ExtAddPairWise struct {
 }
 
 // Kind implements Operation.Kind.
-func (o *OperationV128ExtAddPairWise) Kind() OperationKind {
-	return OperationKindV128ExtAddPairWise
+func (o *OperationV128ExtAddPairwise) Kind() OperationKind {
+	return OperationKindV128ExtAddPairwise
 }
 
 // OperationV128FloatPromote implements Operation.

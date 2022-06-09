@@ -803,8 +803,8 @@ func (c *arm64Compiler) compileV128Q15mulrSatS(o *wazeroir.OperationV128Q15mulrS
 	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
 }
 
-// compileV128ExtAddPairWise implements compiler.compileV128ExtAddPairWise for arm64.
-func (c *arm64Compiler) compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error {
+// compileV128ExtAddPairwise implements compiler.compileV128ExtAddPairwise for arm64.
+func (c *arm64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAddPairwise) error {
 	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
 }
 

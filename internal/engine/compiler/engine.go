@@ -1134,8 +1134,8 @@ func compileWasmFunction(_ wasm.Features, ir *wazeroir.CompilationResult) (*code
 			err = compiler.compileV128ExtMul(o)
 		case *wazeroir.OperationV128Q15mulrSatS:
 			err = compiler.compileV128Q15mulrSatS(o)
-		case *wazeroir.OperationV128ExtAddPairWise:
-			err = compiler.compileV128ExtAddPairWise(o)
+		case *wazeroir.OperationV128ExtAddPairwise:
+			err = compiler.compileV128ExtAddPairwise(o)
 		case *wazeroir.OperationV128FloatPromote:
 			err = compiler.compileV128FloatPromote(o)
 		case *wazeroir.OperationV128FloatDemote:

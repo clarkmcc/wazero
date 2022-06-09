@@ -2270,8 +2270,56 @@ func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSat
 	return nil
 }
 
-// compileV128ExtAddPairWise implements compiler.compileV128ExtAddPairWise for amd64.
-func (c *amd64Compiler) compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error {
+var (
+	extAddPairwiseI8x16Mask  = [16]byte{0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}
+	extAddPairwiseI16x8sMask = [16]byte{0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0}
+	extAddPairwiseI16x8uMask = [16 * 3]byte{
+		0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
+		0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
+		0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
+	}
+)
+
+// compileV128ExtAddPairwise implements compiler.compileV128ExtAddPairwise for amd64.
+func (c *amd64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAddPairwise) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	switch o.OriginShape {
+	case wazeroir.ShapeI8x16:
+		allOnesReg, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
+		}
+
+		if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU,
+			extAddPairwiseI8x16Mask[:], allOnesReg); err != nil {
+			return err
+		}
+
+		var result asm.Register
+		// See https://www.felixcloutier.com/x86/pmaddubsw for detail.
+		if o.Signed {
+			// Interpret vr's value as signed byte and multiply with one and add pairwise, which results in pairwise
+			// signed extadd.
+			c.assembler.CompileRegisterToRegister(amd64.PMADDUBSW, vr, allOnesReg)
+			result = allOnesReg
+		} else {
+			// Interpreter tmp (all ones) as signed byte meaning that all the multiply-add is unsigned.
+			c.assembler.CompileRegisterToRegister(amd64.PMADDUBSW, allOnesReg, vr)
+			result = vr
+		}
+
+		if result != vr {
+			c.locationStack.markRegisterUnused(vr)
+		}
+		c.pushVectorRuntimeValueLocationOnRegister(result)
+	case wazeroir.ShapeI16x8:
+	}
+
 	return nil
 }
 

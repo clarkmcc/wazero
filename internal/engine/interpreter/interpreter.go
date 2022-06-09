@@ -695,7 +695,7 @@ func (e *engine) lowerIR(ir *wazeroir.CompilationResult) (*code, error) {
 			}
 			op.b3 = o.UseLow
 		case *wazeroir.OperationV128Q15mulrSatS:
-		case *wazeroir.OperationV128ExtAddPairWise:
+		case *wazeroir.OperationV128ExtAddPairwise:
 			op.b1 = o.OriginShape
 			op.b3 = o.Signed
 		case *wazeroir.OperationV128FloatPromote:
@@ -3823,7 +3823,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			ce.pushValue(retLo)
 			ce.pushValue(retHi)
 			frame.pc++
-		case wazeroir.OperationKindV128ExtAddPairWise:
+		case wazeroir.OperationKindV128ExtAddPairwise:
 			hi, lo := ce.popValue(), ce.popValue()
 
 			signed := op.b3
