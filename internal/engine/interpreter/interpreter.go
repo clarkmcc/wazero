@@ -4,6 +4,13 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"math"
+	"math/bits"
+	"reflect"
+	"strings"
+	"sync"
+	"unsafe"
+
 	"github.com/tetratelabs/wazero/experimental"
 	"github.com/tetratelabs/wazero/internal/buildoptions"
 	"github.com/tetratelabs/wazero/internal/moremath"
@@ -11,12 +18,6 @@ import (
 	"github.com/tetratelabs/wazero/internal/wasmdebug"
 	"github.com/tetratelabs/wazero/internal/wasmruntime"
 	"github.com/tetratelabs/wazero/internal/wazeroir"
-	"math"
-	"math/bits"
-	"reflect"
-	"strings"
-	"sync"
-	"unsafe"
 )
 
 var callStackCeiling = buildoptions.CallStackCeiling
