@@ -399,6 +399,8 @@ func (o OperationKind) String() (ret string) {
 		ret = "V128Dot"
 	case OperationKindV128Narrow:
 		ret = "V128Narrow"
+	case OperationKindV128ITruncSatFromF:
+		ret = "V128ITruncSatFromF"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
