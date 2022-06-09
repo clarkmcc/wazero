@@ -2881,18 +2881,18 @@ func TestModule_funcValidation_SIMD(t *testing.T) {
 		{name: OpcodeVecV128Load64LaneName, body: loadLane(OpcodeVecV128Load64Lane, 0, 3, 1)},
 		{
 			name: OpcodeVecV128StoreName, body: []byte{
-			OpcodeI32Const,
-			1, 1, 1, 1,
-			OpcodeVecPrefix,
-			OpcodeVecV128Const,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			OpcodeVecPrefix,
-			OpcodeVecV128Store,
-			4,  // alignment
-			10, // offset
-			OpcodeEnd,
-		},
+				OpcodeI32Const,
+				1, 1, 1, 1,
+				OpcodeVecPrefix,
+				OpcodeVecV128Const,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				OpcodeVecPrefix,
+				OpcodeVecV128Store,
+				4,  // alignment
+				10, // offset
+				OpcodeEnd,
+			},
 		},
 		{name: OpcodeVecV128Store8LaneName, body: storeLane(OpcodeVecV128Store8Lane, 0, 0, 0)},
 		{name: OpcodeVecV128Store8LaneName + "/lane=15", body: storeLane(OpcodeVecV128Store8Lane, 100, 0, 15)},
@@ -2939,20 +2939,20 @@ func TestModule_funcValidation_SIMD(t *testing.T) {
 		{name: OpcodeVecI8x16SwizzleName, body: vv2v(OpcodeVecI8x16Swizzle)},
 		{
 			name: OpcodeVecV128i8x16ShuffleName, body: []byte{
-			OpcodeVecPrefix,
-			OpcodeVecV128Const,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			OpcodeVecPrefix,
-			OpcodeVecV128Const,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1,
-			OpcodeVecPrefix,
-			OpcodeVecV128i8x16Shuffle,
-			1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-			OpcodeDrop,
-			OpcodeEnd,
-		},
+				OpcodeVecPrefix,
+				OpcodeVecV128Const,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				OpcodeVecPrefix,
+				OpcodeVecV128Const,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				OpcodeVecPrefix,
+				OpcodeVecV128i8x16Shuffle,
+				1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+				OpcodeDrop,
+				OpcodeEnd,
+			},
 		},
 		{name: OpcodeVecV128NotName, body: v2v(OpcodeVecV128Not)},
 		{name: OpcodeVecV128AndName, body: vv2v(OpcodeVecV128And)},
@@ -3226,16 +3226,6 @@ func TestModule_funcValidation_SIMD_error(t *testing.T) {
 				0, 0, 0, 0, 0, 0, 0, 0,
 			},
 			expectedErr: "invalid lane index[0] 255 >= 32 for v128.shuffle",
-		},
-		{
-			// TODO delete this case after SIMD impl completion.
-			name: "unimplemented",
-			body: []byte{
-				OpcodeVecPrefix,
-				OpcodeVecF32x4DemoteF64x2Zero,
-			},
-			flag:        FeatureSIMD,
-			expectedErr: "TODO: SIMD instruction f32x4.demote_f64x2_zero will be implemented in #506",
 		},
 	}
 
