@@ -2475,12 +2475,14 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 			c.assembler.CompileRegisterToRegister(amd64.UNPCKLPS, tmp, vr)
 
 			// tmp = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43]
-			//     = [0x1.0p52, 0x1.0p52]
+			//     = [float64(0x1.0p52), float64(0x1.0p52)]
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[16:], tmp); err != nil {
 				return err
 			}
 
-			// vr = [float64(uint32(d1)), float64(uint32(d2))] because the following equality always satisfies:
+			// Now, we get the result as
+			// 	vr = [float64(uint32(d1)), float64(uint32(d2))]
+			// because the following equality always satisfies:
 			//  float64(0x1.0p52 + float64(uint32(x))) - float64(0x1.0p52 + float64(uint32(y))) = float64(uint32(x)) - float64(uint32(y))
 			c.assembler.CompileRegisterToRegister(amd64.SUBPD, tmp, vr)
 		}
