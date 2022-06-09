@@ -35,11 +35,9 @@ func TestCompiler(t *testing.T) {
 			"simd_f64x2.json", "simd_f32x4.json", "simd_f32x4_rounding.json", "simd_f64x2_rounding.json",
 			"simd_f64x2_pmin_pmax.json", "simd_f32x4_pmin_pmax.json", "simd_int_to_int_extend.json",
 			"simd_i64x2_extmul_i32x4.json", "simd_i32x4_extmul_i16x8.json", "simd_i16x8_extmul_i8x16.json",
-			"simd_i16x8_q15mulr_sat_s.json", "simd_i16x8_extadd_pairwise_i8x16.json":
+			"simd_i16x8_q15mulr_sat_s.json", "simd_i16x8_extadd_pairwise_i8x16.json", "simd_i32x4_extadd_pairwise_i16x8.json":
 			// TODO: implement on arm64.
 			return runtime.GOARCH == "amd64"
-		case "simd_i32x4_extadd_pairwise_i16x8.json":
-			return false
 		case "simd_i32x4_dot_i16x8.json":
 			return false
 		case "simd_conversions.json":

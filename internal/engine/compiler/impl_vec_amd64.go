@@ -2271,11 +2271,10 @@ func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSat
 }
 
 var (
-	extAddPairwiseI8x16Mask  = [16]byte{0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}
-	extAddPairwiseI16x8sMask = [16]byte{0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0}
-	extAddPairwiseI16x8uMask = [16 * 3]byte{
+	allOnesI8x16             = [16]byte{0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1}
+	allOnesI16x8             = [16]byte{0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0}
+	extAddPairwiseI16x8uMask = [16 * 2]byte{
 		0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
-		0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00,
 		0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
 	}
 )
@@ -2296,7 +2295,7 @@ func (c *amd64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAd
 		}
 
 		if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU,
-			extAddPairwiseI8x16Mask[:], allOnesReg); err != nil {
+			allOnesI8x16[:], allOnesReg); err != nil {
 			return err
 		}
 
@@ -2318,8 +2317,49 @@ func (c *amd64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAd
 		}
 		c.pushVectorRuntimeValueLocationOnRegister(result)
 	case wazeroir.ShapeI16x8:
-	}
+		tmp, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
+		}
 
+		if o.Signed {
+			// See https://www.felixcloutier.com/x86/pmaddwd
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, allOnesI16x8[:], tmp); err != nil {
+				return err
+			}
+
+			c.assembler.CompileRegisterToRegister(amd64.PMADDWD, tmp, vr)
+			c.pushVectorRuntimeValueLocationOnRegister(vr)
+		} else {
+
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, extAddPairwiseI16x8uMask[:16], tmp); err != nil {
+				return err
+			}
+
+			// Flip the sign bits on vr.
+			//
+			// Assuming that vr = [w1, ..., w8], now we have,
+			// 	vr[i] = int8(-w1) for i = 0...8
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, vr)
+
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, allOnesI16x8[:], tmp); err != nil {
+				return err
+			}
+
+			// For i = 0,..4 (as this results in i32x4 lanes), now we have
+			// vr[i] = int32(-wn + -w(n+1)) = int32(-(wn + w(n+1)))
+			c.assembler.CompileRegisterToRegister(amd64.PMADDWD, tmp, vr)
+
+			// tmp[i] = [0, 0, 1, 0] = int32(math.MaxInt32+1)
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, extAddPairwiseI16x8uMask[16:], tmp); err != nil {
+				return err
+			}
+
+			// vr[i] = int32(-(wn + w(n+1))) + int32(math.MaxInt32+1) = int32((wn + w(n+1))) = uint32(wn + w(n+1)).
+			c.assembler.CompileRegisterToRegister(amd64.PADDD, tmp, vr)
+			c.pushVectorRuntimeValueLocationOnRegister(vr)
+		}
+	}
 	return nil
 }
 
