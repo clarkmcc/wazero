@@ -1296,6 +1296,81 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			n:    &NodeImpl{Instruction: PMULHW, SrcReg: RegX1, DstReg: RegX2},
 			exp:  []byte{0x66, 0xf, 0xe5, 0xd1},
 		},
+		{
+			name: "cmpltps xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CMPEQPS, SrcReg: RegX14, DstReg: RegX1, Arg: 1},
+			exp:  []byte{0x41, 0xf, 0xc2, 0xce, 0x1},
+		},
+		{
+			name: "cmpunordpd xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CMPEQPD, SrcReg: RegX14, DstReg: RegX1, Arg: 3},
+			exp:  []byte{0x66, 0x41, 0xf, 0xc2, 0xce, 0x3},
+		},
+		{
+			name: "cvttps2dq xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTTPS2DQ, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0xf3, 0x41, 0xf, 0x5b, 0xce},
+		},
+		{
+			name: "cvtdq2ps xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTDQ2PS, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x41, 0xf, 0x5b, 0xce},
+		},
+		{
+			name: "movupd xmm1, xmm14",
+			n:    &NodeImpl{Instruction: MOVUPD, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x10, 0xce},
+		},
+		{
+			name: "shufps xmm1, xmm14, 5",
+			n:    &NodeImpl{Instruction: SHUFPS, SrcReg: RegX14, DstReg: RegX1, Arg: 5},
+			exp:  []byte{0x41, 0xf, 0xc6, 0xce, 0x5},
+		},
+		{
+			name: "pmaddwd xmm1, xmm14",
+			n:    &NodeImpl{Instruction: PMADDWD, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0xf5, 0xce},
+		},
+		{
+			name: "cvtdq2pd xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTDQ2PD, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0xf3, 0x41, 0xf, 0xe6, 0xce},
+		},
+		{
+			name: "unpcklps xmm1, xmm14",
+			n:    &NodeImpl{Instruction: UNPCKLPS, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x41, 0xf, 0x14, 0xce},
+		},
+		{
+			name: "packuswb xmm1, xmm14",
+			n:    &NodeImpl{Instruction: PACKUSWB, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x67, 0xce},
+		},
+		{
+			name: "packssdw xmm1, xmm14",
+			n:    &NodeImpl{Instruction: PACKSSDW, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x6b, 0xce},
+		},
+		{
+			name: "packusdw xmm1, xmm14",
+			n:    &NodeImpl{Instruction: PACKUSDW, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x2b, 0xce},
+		},
+		{
+			name: "cvtps2pd xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTPS2PD, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x41, 0xf, 0x5a, 0xce},
+		},
+		{
+			name: "cvtpd2ps xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTPD2PS, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x5a, 0xce},
+		},
+		{
+			name: "pmaddubsw xmm1, xmm14",
+			n:    &NodeImpl{Instruction: PMADDUBSW, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x4, 0xce},
+		},
 	}
 
 	for _, tt := range tests {

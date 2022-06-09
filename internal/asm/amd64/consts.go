@@ -523,6 +523,36 @@ const (
 	PMULHRSW
 	// PMULHW is the PMULHW instruction https://www.felixcloutier.com/x86/pmulhw
 	PMULHW
+	// CMPEQPS is the CMPEQPS instruction https://www.felixcloutier.com/x86/cmpps
+	CMPEQPS
+	// CMPEQPD is the CMPEQPD instruction https://www.felixcloutier.com/x86/cmppd
+	CMPEQPD
+	// CVTTPS2DQ is the CVTTPS2DQ instruction https://www.felixcloutier.com/x86/cvttps2dq
+	CVTTPS2DQ
+	// CVTDQ2PS is the CVTDQ2PS instruction https://www.felixcloutier.com/x86/cvtdq2ps
+	CVTDQ2PS
+	// MOVUPD is the MOVUPD instruction https://www.felixcloutier.com/x86/movupd
+	MOVUPD
+	// SHUFPS is the SHUFPS instruction https://www.felixcloutier.com/x86/shufps
+	SHUFPS
+	// PMADDWD is the PMADDWD instruction https://www.felixcloutier.com/x86/pmaddwd
+	PMADDWD
+	// CVTDQ2PD is the CVTDQ2PD instruction https://www.felixcloutier.com/x86/cvtdq2pd
+	CVTDQ2PD
+	// UNPCKLPS is the UNPCKLPS instruction https://www.felixcloutier.com/x86/unpcklps
+	UNPCKLPS
+	// PACKUSWB is the PACKUSWB instruction https://www.felixcloutier.com/x86/packuswb
+	PACKUSWB
+	// PACKSSDW is the PACKSSDW instruction https://www.felixcloutier.com/x86/packsswb:packssdw
+	PACKSSDW
+	// PACKUSDW is the PACKUSDW instruction https://www.felixcloutier.com/x86/packusdw
+	PACKUSDW
+	// CVTPS2PD is the CVTPS2PD instruction https://www.felixcloutier.com/x86/cvtps2pd
+	CVTPS2PD
+	// CVTPD2PS is the CVTPD2PS instruction https://www.felixcloutier.com/x86/cvtpd2ps
+	CVTPD2PS
+	// PMADDUBSW is the PMADDUBSW instruction https://www.felixcloutier.com/x86/pmaddubsw
+	PMADDUBSW
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd
@@ -1011,6 +1041,36 @@ func InstructionName(instruction asm.Instruction) string {
 		return "PMULHRSW"
 	case PMULHW:
 		return "PMULHW"
+	case CMPEQPS:
+		return "CMPEQPS"
+	case CMPEQPD:
+		return "CMPEQPD"
+	case CVTTPS2DQ:
+		return "CVTTPS2DQ"
+	case CVTDQ2PS:
+		return "CVTDQ2PS"
+	case MOVUPD:
+		return "MOVUPD"
+	case SHUFPS:
+		return "SHUFPS"
+	case PMADDWD:
+		return "PMADDWD"
+	case CVTDQ2PD:
+		return "CVTDQ2PD"
+	case UNPCKLPS:
+		return "UNPCKLPS"
+	case PACKUSWB:
+		return "PACKUSWB"
+	case PACKSSDW:
+		return "PACKSSDW"
+	case PACKUSDW:
+		return "PACKUSDW"
+	case CVTPS2PD:
+		return "CVTPS2PD"
+	case CVTPD2PS:
+		return "CVTPD2PS"
+	case PMADDUBSW:
+		return "PMADDUBSW"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }
