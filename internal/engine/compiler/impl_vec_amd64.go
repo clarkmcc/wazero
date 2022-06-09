@@ -2178,7 +2178,6 @@ func (c *amd64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error
 		c.assembler.CompileRegisterToRegister(ext, x2r, x2r)
 
 		c.assembler.CompileRegisterToRegister(amd64.PMULLW, x2r, x1r)
-
 	case wazeroir.ShapeI16x8:
 		tmp, err := c.allocateRegister(registerTypeVector)
 		if err != nil {
