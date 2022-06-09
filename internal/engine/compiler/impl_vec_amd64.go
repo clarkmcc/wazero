@@ -2350,12 +2350,12 @@ func (c *amd64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAd
 			// vr[i] = int32(-wn + -w(n+1)) = int32(-(wn + w(n+1)))
 			c.assembler.CompileRegisterToRegister(amd64.PMADDWD, tmp, vr)
 
-			// tmp[i] = [0, 0, 1, 0] = int32(math.MaxInt32+1)
+			// tmp[i] = [0, 0, 1, 0] = int32(math.MaxInt16+1)
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, extAddPairwiseI16x8uMask[16:], tmp); err != nil {
 				return err
 			}
 
-			// vr[i] = int32(-(wn + w(n+1))) + int32(math.MaxInt32+1) = int32((wn + w(n+1))) = uint32(wn + w(n+1)).
+			// vr[i] = int32(-(wn + w(n+1))) + int32(math.MaxInt16+1) = int32((wn + w(n+1))) = uint32(wn + w(n+1)).
 			c.assembler.CompileRegisterToRegister(amd64.PADDD, tmp, vr)
 			c.pushVectorRuntimeValueLocationOnRegister(vr)
 		}
@@ -2364,17 +2364,28 @@ func (c *amd64Compiler) compileV128ExtAddPairwise(o *wazeroir.OperationV128ExtAd
 }
 
 // compileV128FloatPromote implements compiler.compileV128FloatPromote for amd64.
-func (c *amd64Compiler) compileV128FloatPromote(o *wazeroir.OperationV128FloatPromote) error {
+func (c *amd64Compiler) compileV128FloatPromote(*wazeroir.OperationV128FloatPromote) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	c.assembler.CompileRegisterToRegister(amd64.CVTPS2PD, vr, vr)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 
 // compileV128FloatDemote implements compiler.compileV128FloatDemote for amd64.
 func (c *amd64Compiler) compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error {
-	return nil
-}
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
 
-// compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
-func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
+	c.assembler.CompileRegisterToRegister(amd64.CVTPD2PS, vr, vr)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 
@@ -2394,6 +2405,11 @@ func (c *amd64Compiler) compileV128Dot(*wazeroir.OperationV128Dot) error {
 
 	c.locationStack.markRegisterUnused(x2.register)
 	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
+	return nil
+}
+
+// compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
+func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
 	return nil
 }
 
