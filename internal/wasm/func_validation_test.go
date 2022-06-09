@@ -3132,6 +3132,10 @@ func TestModule_funcValidation_SIMD(t *testing.T) {
 		{name: OpcodeVecI8x16NarrowI16x8UName, body: vv2v(OpcodeVecI8x16NarrowI16x8U)},
 		{name: OpcodeVecI16x8NarrowI32x4SName, body: vv2v(OpcodeVecI16x8NarrowI32x4S)},
 		{name: OpcodeVecI16x8NarrowI32x4UName, body: vv2v(OpcodeVecI16x8NarrowI32x4U)},
+		{name: OpcodeVecI32x4TruncSatF32x4SName, body: v2v(OpcodeVecI32x4TruncSatF32x4S)},
+		{name: OpcodeVecI32x4TruncSatF32x4UName, body: v2v(OpcodeVecI32x4TruncSatF32x4U)},
+		{name: OpcodeVecI32x4TruncSatF64x2SZeroName, body: v2v(OpcodeVecI32x4TruncSatF64x2SZero)},
+		{name: OpcodeVecI32x4TruncSatF64x2UZeroName, body: v2v(OpcodeVecI32x4TruncSatF64x2UZero)},
 	}
 
 	for _, tt := range tests {

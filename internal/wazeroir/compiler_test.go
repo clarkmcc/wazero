@@ -2412,6 +2412,22 @@ func TestCompile_Vec(t *testing.T) {
 			needDropBeforeReturn: true,
 			expected:             &OperationV128Narrow{OriginShape: ShapeI32x4, Signed: false},
 		},
+		{name: wasm.OpcodeVecI32x4TruncSatF32x4SName, body: v2v(wasm.OpcodeVecI32x4TruncSatF32x4S),
+			needDropBeforeReturn: true,
+			expected:             &OperationV128ITruncSatFromF{OriginShape: ShapeF32x4, Signed: true},
+		},
+		{name: wasm.OpcodeVecI32x4TruncSatF32x4UName, body: v2v(wasm.OpcodeVecI32x4TruncSatF32x4U),
+			needDropBeforeReturn: true,
+			expected:             &OperationV128ITruncSatFromF{OriginShape: ShapeF32x4, Signed: false},
+		},
+		{name: wasm.OpcodeVecI32x4TruncSatF64x2SZeroName, body: v2v(wasm.OpcodeVecI32x4TruncSatF64x2SZero),
+			needDropBeforeReturn: true,
+			expected:             &OperationV128ITruncSatFromF{OriginShape: ShapeF64x2, Signed: true},
+		},
+		{name: wasm.OpcodeVecI32x4TruncSatF64x2UZeroName, body: v2v(wasm.OpcodeVecI32x4TruncSatF64x2UZero),
+			needDropBeforeReturn: true,
+			expected:             &OperationV128ITruncSatFromF{OriginShape: ShapeF64x2, Signed: false},
+		},
 	}
 
 	for _, tt := range tests {

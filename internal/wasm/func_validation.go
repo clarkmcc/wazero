@@ -1324,7 +1324,8 @@ func (m *Module) validateFunctionWithMaxStackValues(
 				OpcodeVecI32x4ExtaddPairwiseI16x8S, OpcodeVecI32x4ExtaddPairwiseI16x8U,
 				OpcodeVecF64x2PromoteLowF32x4Zero, OpcodeVecF32x4DemoteF64x2Zero,
 				OpcodeVecF32x4ConvertI32x4S, OpcodeVecF32x4ConvertI32x4U,
-				OpcodeVecF64x2ConvertLowI32x4S, OpcodeVecF64x2ConvertLowI32x4U:
+				OpcodeVecF64x2ConvertLowI32x4S, OpcodeVecF64x2ConvertLowI32x4U,
+				OpcodeVecI32x4TruncSatF32x4S, OpcodeVecI32x4TruncSatF32x4U, OpcodeVecI32x4TruncSatF64x2SZero, OpcodeVecI32x4TruncSatF64x2UZero:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeV128); err != nil {
 					return fmt.Errorf("cannot pop the operand for %s: %v", vectorInstructionName[vecOpcode], err)
 				}

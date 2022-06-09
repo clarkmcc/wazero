@@ -546,6 +546,7 @@ const (
 	OperationKindV128FConvertFromI
 	OperationKindV128Dot
 	OperationKindV128Narrow
+	OperationKindV128ITruncSatFromF
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
@@ -1965,7 +1966,7 @@ func (o *OperationV128FloatDemote) Kind() OperationKind {
 
 // OperationV128FConvertFromI implements Operation.
 type OperationV128FConvertFromI struct {
-	// DestinationShape is the shape of the destination lanes for extension which is
+	// DestinationShape is the shape of the destination lanes for conversion which is
 	// either ShapeF32x4, or ShapeF64x2.
 	DestinationShape Shape
 	Signed           bool
@@ -1986,7 +1987,7 @@ func (o *OperationV128Dot) Kind() OperationKind {
 
 // OperationV128Narrow implements Operation.
 type OperationV128Narrow struct {
-	// OriginShape is the shape of the original lanes for extension which is
+	// OriginShape is the shape of the original lanes for narrowing which is
 	// either ShapeI16x8, or ShapeI32x4.
 	OriginShape Shape
 	Signed      bool
@@ -1995,4 +1996,17 @@ type OperationV128Narrow struct {
 // Kind implements Operation.Kind.
 func (o *OperationV128Narrow) Kind() OperationKind {
 	return OperationKindV128Narrow
+}
+
+// OperationV128ITruncSatFromF implements Operation.
+type OperationV128ITruncSatFromF struct {
+	// OriginShape is the shape of the original lanes for truncation which is
+	// either ShapeF32x4, or ShapeF64x2.
+	OriginShape Shape
+	Signed      bool
+}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128ITruncSatFromF) Kind() OperationKind {
+	return OperationKindV128ITruncSatFromF
 }

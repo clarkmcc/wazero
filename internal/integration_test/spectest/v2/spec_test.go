@@ -54,18 +54,5 @@ func TestCompiler(t *testing.T) {
 }
 
 func TestInterpreter(t *testing.T) {
-	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(jsonname string) bool {
-		switch path.Base(jsonname) {
-		case "simd_i32x4_trunc_sat_f32x4.json":
-			return false
-		case "simd_i32x4_trunc_sat_f64x2.json":
-			return false
-		case "simd_load.json":
-			return false
-		case "simd_splat.json":
-			return false
-		default:
-			return true
-		}
-	})
+	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(string) bool { return true })
 }

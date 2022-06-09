@@ -4,13 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"math"
-	"math/bits"
-	"reflect"
-	"strings"
-	"sync"
-	"unsafe"
-
 	"github.com/tetratelabs/wazero/experimental"
 	"github.com/tetratelabs/wazero/internal/buildoptions"
 	"github.com/tetratelabs/wazero/internal/moremath"
@@ -18,6 +11,12 @@ import (
 	"github.com/tetratelabs/wazero/internal/wasmdebug"
 	"github.com/tetratelabs/wazero/internal/wasmruntime"
 	"github.com/tetratelabs/wazero/internal/wazeroir"
+	"math"
+	"math/bits"
+	"reflect"
+	"strings"
+	"sync"
+	"unsafe"
 )
 
 var callStackCeiling = buildoptions.CallStackCeiling
@@ -705,6 +704,9 @@ func (e *engine) lowerIR(ir *wazeroir.CompilationResult) (*code, error) {
 			op.b3 = o.Signed
 		case *wazeroir.OperationV128Dot:
 		case *wazeroir.OperationV128Narrow:
+			op.b1 = o.OriginShape
+			op.b3 = o.Signed
+		case *wazeroir.OperationV128ITruncSatFromF:
 			op.b1 = o.OriginShape
 			op.b3 = o.Signed
 		default:
@@ -4059,6 +4061,77 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				uint64(uint32(int32(int16(x1Hi>>0))*int32(int16(x2Hi>>0))+int32(int16(x1Hi>>16))*int32(int16(x2Hi>>16)))) |
 					(uint64(uint32(int32(int16(x1Hi>>32))*int32(int16(x2Hi>>32))+int32(int16(x1Hi>>48))*int32(int16(x2Hi>>48)))) << 32),
 			)
+			frame.pc++
+		case wazeroir.OperationKindV128ITruncSatFromF:
+			hi, lo := ce.popValue(), ce.popValue()
+			signed := op.b3
+			var retLo, retHi uint64
+
+			switch op.b1 {
+			case wazeroir.ShapeF32x4: // f32x4 to i32x4
+				for i, f64 := range [4]float64{
+					math.Trunc(float64(math.Float32frombits(uint32(lo)))),
+					math.Trunc(float64(math.Float32frombits(uint32(lo >> 32)))),
+					math.Trunc(float64(math.Float32frombits(uint32(hi)))),
+					math.Trunc(float64(math.Float32frombits(uint32(hi >> 32))))} {
+
+					var v uint32
+					if math.IsNaN(f64) {
+						v = 0
+					} else if signed {
+						if f64 < math.MinInt32 {
+							f64 = math.MinInt32
+						} else if f64 > math.MaxInt32 {
+							f64 = math.MaxInt32
+						}
+						v = uint32(int32(f64))
+					} else {
+						if f64 < 0 {
+							f64 = 0
+						} else if f64 > math.MaxUint32 {
+							f64 = math.MaxUint32
+						}
+						v = uint32(f64)
+					}
+
+					if i < 2 {
+						retLo |= uint64(v) << (i * 32)
+					} else {
+						retHi |= uint64(v) << ((i - 2) * 32)
+					}
+				}
+
+			case wazeroir.ShapeF64x2: // f64x2 to i32x4
+				for i, f := range [2]float64{
+					math.Trunc(math.Float64frombits(lo)),
+					math.Trunc(math.Float64frombits(hi)),
+				} {
+					var v uint32
+					if math.IsNaN(f) {
+						v = 0
+					} else if signed {
+						if f < math.MinInt32 {
+							f = math.MinInt32
+						} else if f > math.MaxInt32 {
+							f = math.MaxInt32
+						}
+						v = uint32(int32(f))
+					} else {
+						if f < 0 {
+							f = 0
+						} else if f > math.MaxUint32 {
+							f = math.MaxUint32
+						}
+						v = uint32(f)
+					}
+
+					retLo |= uint64(v) << (i * 32)
+				}
+			}
+
+			ce.pushValue(retLo)
+			ce.pushValue(retHi)
+			frame.pc++
 			frame.pc++
 		}
 	}

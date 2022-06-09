@@ -2788,6 +2788,22 @@ operatorSwitch:
 			c.emit(
 				&OperationV128Narrow{OriginShape: ShapeI32x4, Signed: false},
 			)
+		case wasm.OpcodeVecI32x4TruncSatF32x4S:
+			c.emit(
+				&OperationV128ITruncSatFromF{OriginShape: ShapeF32x4, Signed: true},
+			)
+		case wasm.OpcodeVecI32x4TruncSatF32x4U:
+			c.emit(
+				&OperationV128ITruncSatFromF{OriginShape: ShapeF32x4, Signed: false},
+			)
+		case wasm.OpcodeVecI32x4TruncSatF64x2SZero:
+			c.emit(
+				&OperationV128ITruncSatFromF{OriginShape: ShapeF64x2, Signed: true},
+			)
+		case wasm.OpcodeVecI32x4TruncSatF64x2UZero:
+			c.emit(
+				&OperationV128ITruncSatFromF{OriginShape: ShapeF64x2, Signed: false},
+			)
 		default:
 			return fmt.Errorf("unsupported vector instruction in wazeroir: %s", wasm.VectorInstructionName(vecOp))
 		}
