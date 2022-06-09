@@ -617,8 +617,8 @@ const (
 	OpcodeVecF32x4ConvertI32x4U       OpcodeVec = 0xfb
 	OpcodeVecI32x4TruncSatF64x2SZero  OpcodeVec = 0xfc
 	OpcodeVecI32x4TruncSatF64x2UZero  OpcodeVec = 0xfd
-	OpcodeVecF64x2ConvertI32x4S       OpcodeVec = 0xfe
-	OpcodeVecF64x2ConvertI32x4U       OpcodeVec = 0xff
+	OpcodeVecF64x2ConvertLowI32x4S    OpcodeVec = 0xfe
+	OpcodeVecF64x2ConvertLowI32x4U    OpcodeVec = 0xff
 	OpcodeVecF32x4DemoteF64x2Zero     OpcodeVec = 0x5e
 	OpcodeVecF64x2PromoteLowF32x4Zero OpcodeVec = 0x5f
 )
@@ -1299,8 +1299,8 @@ const (
 	OpcodeVecF32x4ConvertI32x4UName        = "f32x4.convert_i32x4_u"
 	OpcodeVecI32x4TruncSatF64x2SZeroName   = "i32x4.trunc_sat_f64x2_s_zero"
 	OpcodeVecI32x4TruncSatF64x2UZeroName   = "i32x4.trunc_sat_f64x2_u_zero"
-	OpcodeVecF64x2ConvertI32x4SName        = "f64x2.convert_low_i32x4_s"
-	OpcodeVecF64x2ConvertI32x4UName        = "f64x2.convert_low_i32x4_u"
+	OpcodeVecF64x2ConvertLowI32x4SName     = "f64x2.convert_low_i32x4_s"
+	OpcodeVecF64x2ConvertLowI32x4UName     = "f64x2.convert_low_i32x4_u"
 	OpcodeVecF32x4DemoteF64x2ZeroName      = "f32x4.demote_f64x2_zero"
 	OpcodeVecF64x2PromoteLowF32x4ZeroName  = "f64x2.promote_low_f32x4"
 )
@@ -1538,8 +1538,8 @@ var vectorInstructionName = map[OpcodeVec]string{
 	OpcodeVecF32x4ConvertI32x4U:        OpcodeVecF32x4ConvertI32x4UName,
 	OpcodeVecI32x4TruncSatF64x2SZero:   OpcodeVecI32x4TruncSatF64x2SZeroName,
 	OpcodeVecI32x4TruncSatF64x2UZero:   OpcodeVecI32x4TruncSatF64x2UZeroName,
-	OpcodeVecF64x2ConvertI32x4S:        OpcodeVecF64x2ConvertI32x4SName,
-	OpcodeVecF64x2ConvertI32x4U:        OpcodeVecF64x2ConvertI32x4UName,
+	OpcodeVecF64x2ConvertLowI32x4S:     OpcodeVecF64x2ConvertLowI32x4SName,
+	OpcodeVecF64x2ConvertLowI32x4U:     OpcodeVecF64x2ConvertLowI32x4UName,
 	OpcodeVecF32x4DemoteF64x2Zero:      OpcodeVecF32x4DemoteF64x2ZeroName,
 	OpcodeVecF64x2PromoteLowF32x4Zero:  OpcodeVecF64x2PromoteLowF32x4ZeroName,
 }
