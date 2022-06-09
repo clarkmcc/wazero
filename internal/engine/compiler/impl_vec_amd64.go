@@ -2231,7 +2231,39 @@ func (c *amd64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error
 	return nil
 }
 
+var q15mulrSatSMask = [16]byte{
+	0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
+	0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80,
+}
+
 // compileV128Q15mulrSatS implements compiler.compileV128Q15mulrSatS for amd64.
 func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSatS) error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	tmp, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	x1r, x2r := x1.register, x2.register
+
+	if err := c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, q15mulrSatSMask[:], tmp); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(amd64.PMULHRSW, x2r, x1r)
+	c.assembler.CompileRegisterToRegister(amd64.PCMPEQW, x1r, tmp)
+	c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, x1r)
+
+	c.locationStack.markRegisterUnused(x2r)
+	c.pushVectorRuntimeValueLocationOnRegister(x1r)
 	return nil
 }
