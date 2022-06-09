@@ -2480,7 +2480,8 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 				return err
 			}
 
-			// vr = [float64(uint32(d1)), float64(uint32(d2))]
+			// vr = [float64(uint32(d1)), float64(uint32(d2))] because the following equality always satisfies:
+			//  float64(0x1.0p52 + float64(uint32(x))) - float64(0x1.0p52 + float64(uint32(y))) = float64(uint32(x)) - float64(uint32(y))
 			c.assembler.CompileRegisterToRegister(amd64.SUBPD, tmp, vr)
 		}
 	}
@@ -2491,6 +2492,30 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 
 // compileV128Narrow implements compiler.compileV128Narrow for amd64.
 func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	var narrow asm.Instruction
+	switch o.OriginShape {
+	case wazeroir.ShapeI16x8:
+		if o.Signed {
+			narrow = amd64.PACKSSWB
+		} else {
+			narrow = amd64.PACKUSWB
+		}
+	case wazeroir.ShapeI32x4:
+		if o.Signed {
+			narrow = amd64.PACKSSDW
+		} else {
+			narrow = amd64.PACKUSDW
+		}
+	}
+	c.assembler.CompileRegisterToRegister(narrow, vr, vr)
+
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 

@@ -2,9 +2,6 @@ package spectest
 
 import (
 	"embed"
-	"encoding/binary"
-	"fmt"
-	"math"
 	"path"
 	"runtime"
 	"testing"
@@ -23,9 +20,6 @@ var testcases embed.FS
 const enabledFeatures = wasm.Features20220419
 
 func TestCompiler(t *testing.T) {
-
-	fmt.Println(math.Float64frombits(binary.LittleEndian.Uint64([]byte{0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x30, 0x43})))
-	return
 	if !platform.CompilerSupported() {
 		t.Skip()
 	}
@@ -42,11 +36,9 @@ func TestCompiler(t *testing.T) {
 			"simd_f64x2_pmin_pmax.json", "simd_f32x4_pmin_pmax.json", "simd_int_to_int_extend.json",
 			"simd_i64x2_extmul_i32x4.json", "simd_i32x4_extmul_i16x8.json", "simd_i16x8_extmul_i8x16.json",
 			"simd_i16x8_q15mulr_sat_s.json", "simd_i16x8_extadd_pairwise_i8x16.json", "simd_i32x4_extadd_pairwise_i16x8.json",
-			"simd_i32x4_dot_i16x8.json":
+			"simd_i32x4_dot_i16x8.json", "simd_conversions.json":
 			// TODO: implement on arm64.
 			return runtime.GOARCH == "amd64"
-		case "simd_conversions.json":
-			return false
 		case "simd_i32x4_trunc_sat_f32x4.json":
 			return false
 		case "simd_i32x4_trunc_sat_f64x2.json":
