@@ -6329,3 +6329,92 @@ func TestCompiler_compileV128Extend(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128Q15mulrSatS(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name        string
+		x1, x2, exp [16]byte
+	}{
+		{
+			name: "1",
+			x1:   i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:   i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			exp:  i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name: "2",
+			x1:   i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:   i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			exp:  i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name: "3",
+			x1:   i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			x2:   i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			exp:  i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name: "4",
+			x1:   i16x8(65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535),
+			x2:   i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			exp:  i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name: "5",
+			x1:   i16x8(32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767),
+			x2:   i16x8(32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767),
+			exp:  i16x8(32766, 32766, 32766, 32766, 32766, 32766, 32766, 32766),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Q15mulrSatS(&wazeroir.OperationV128Q15mulrSatS{})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
+}
