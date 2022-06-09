@@ -2198,11 +2198,11 @@ func (c *amd64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error
 			c.assembler.CompileRegisterToRegister(amd64.PMULHUW, x2r, tmp)
 		}
 
-		// Unpack lower or higher half of vectors (x2r and x1r) and concatenate them.
+		// Unpack lower or higher half of vectors (tmp and x1r) and concatenate them.
 		if o.UseLow {
-			c.assembler.CompileRegisterToRegister(amd64.PUNPCKLWD, x2r, x1r)
+			c.assembler.CompileRegisterToRegister(amd64.PUNPCKLWD, tmp, x1r)
 		} else {
-			c.assembler.CompileRegisterToRegister(amd64.PUNPCKHWD, x2r, x1r)
+			c.assembler.CompileRegisterToRegister(amd64.PUNPCKHWD, tmp, x1r)
 		}
 	case wazeroir.ShapeI32x4:
 		var shuffleOrder byte

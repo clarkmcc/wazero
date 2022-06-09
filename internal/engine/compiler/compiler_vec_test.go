@@ -5186,3 +5186,295 @@ func TestCompiler_compileV128_Pmax_Pmin(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileV128ExtMul(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name           string
+		shape          wazeroir.Shape
+		signed, useLow bool
+		x1, x2, exp    [16]byte
+	}{
+		{
+			name:   "i8x16s low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: true,
+			x1:     [16]byte{}, x2: [16]byte{},
+			exp: i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name:   "i8x16s low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: true,
+			x1: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			exp: i16x8(128, 128, 128, 128, 128, 128, 128, 128),
+		},
+		{
+			name:   "i8x16s low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: true,
+			x1: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			exp: i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+		},
+		{
+			name:   "i8x16s low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: true,
+			x1: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			exp: i16x8(16384, 16384, 16384, 16384, 16384, 16384, 16384, 16384),
+		},
+		{
+			name:   "i8x16s hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: false,
+			x1:     [16]byte{}, x2: [16]byte{},
+			exp: i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name:   "i8x16s hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			x2: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			exp: i16x8(128, 128, 128, 128, 128, 128, 128, 128),
+		},
+		{
+			name:   "i8x16s hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			x2: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			exp: i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+		},
+		{
+			name:   "i8x16s hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: true,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			x2: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			exp: i16x8(16384, 16384, 16384, 16384, 16384, 16384, 16384, 16384),
+		},
+		{
+			name:   "i8x16u low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: true,
+			x1:     [16]byte{}, x2: [16]byte{},
+			exp: i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name:   "i8x16u low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: true,
+			x1: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0,
+			},
+			exp: i16x8(32640, 32640, 32640, 32640, 32640, 32640, 32640, 32640),
+		},
+		{
+			name:   "i8x16u low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: true,
+			x1: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				255, 255, 255, 255, 255, 255, 255, 255,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			exp: i16x8(i16ToU16(-511), i16ToU16(-511), i16ToU16(-511), i16ToU16(-511),
+				i16ToU16(-511), i16ToU16(-511), i16ToU16(-511), i16ToU16(-511)),
+		},
+		{
+			name:   "i8x16u low",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: true,
+			x1: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			x2: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			exp: i16x8(16384, 16384, 16384, 16384, 16384, 16384, 16384, 16384),
+		},
+		{
+			name:   "i8x16u hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: false,
+			x1:     [16]byte{}, x2: [16]byte{},
+			exp: i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+		},
+		{
+			name:   "i8x16u hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			x2: [16]byte{
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			exp: i16x8(32640, 32640, 32640, 32640, 32640, 32640, 32640, 32640),
+		},
+		{
+			name:   "i8x16u hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			x2: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				255, 255, 255, 255, 255, 255, 255, 255,
+			},
+			exp: i16x8(i16ToU16(-511), i16ToU16(-511), i16ToU16(-511), i16ToU16(-511),
+				i16ToU16(-511), i16ToU16(-511), i16ToU16(-511), i16ToU16(-511)),
+		},
+		{
+			name:   "i8x16u hi",
+			shape:  wazeroir.ShapeI8x16,
+			signed: false,
+			useLow: false,
+			x1: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			x2: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+				i8ToU8(-128), i8ToU8(-128), i8ToU8(-128), i8ToU8(-128),
+			},
+			exp: i16x8(16384, 16384, 16384, 16384, 16384, 16384, 16384, 16384),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128ExtMul(&wazeroir.OperationV128ExtMul{
+				OriginShape: tc.shape, Signed: tc.signed, UseLow: tc.useLow,
+			})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
+}
