@@ -4049,6 +4049,16 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			ce.pushValue(retHi)
 			frame.pc++
 		case wazeroir.OperationKindV128Dot:
+			x2Hi, x2Lo := ce.popValue(), ce.popValue()
+			x1Hi, x1Lo := ce.popValue(), ce.popValue()
+			ce.pushValue(
+				uint64(uint32(int32(int16(x1Lo>>0))*int32(int16(x2Lo>>0))+int32(int16(x1Lo>>16))*int32(int16(x2Lo>>16)))) |
+					(uint64(uint32(int32(int16(x1Lo>>32))*int32(int16(x2Lo>>32))+int32(int16(x1Lo>>48))*int32(int16(x2Lo>>48)))) << 32),
+			)
+			ce.pushValue(
+				uint64(uint32(int32(int16(x1Hi>>0))*int32(int16(x2Hi>>0))+int32(int16(x1Hi>>16))*int32(int16(x2Hi>>16)))) |
+					(uint64(uint32(int32(int16(x1Hi>>32))*int32(int16(x2Hi>>32))+int32(int16(x1Hi>>48))*int32(int16(x2Hi>>48)))) << 32),
+			)
 			frame.pc++
 		}
 	}
