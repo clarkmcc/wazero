@@ -382,11 +382,23 @@ func (o OperationKind) String() (ret string) {
 	case OperationKindV128Pmax:
 		ret = "V128Pmax"
 	case OperationKindV128Extend:
-		ret = "OperationKindV128Extend"
+		ret = "V128Extend"
 	case OperationKindV128ExtMul:
-		ret = "OperationKindV128ExtMul"
+		ret = "V128ExtMul"
 	case OperationKindV128Q15mulrSatS:
-		ret = "OperationKindV128Q15mulrSatS"
+		ret = "V128Q15mulrSatS"
+	case OperationKindV128ExtAddPairWise:
+		ret = "V128ExtAddPairWise"
+	case OperationKindV128FloatPromote:
+		ret = "V128FloatPromote"
+	case OperationKindV128FloatDemote:
+		ret = "V128FloatDemote"
+	case OperationKindV128FConvertFromI:
+		ret = "V128FConvertFromI"
+	case OperationKindV128Dot:
+		ret = "V128Dot"
+	case OperationKindV128Narrow:
+		ret = "V128Narrow"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
@@ -528,6 +540,12 @@ const (
 	OperationKindV128Extend
 	OperationKindV128ExtMul
 	OperationKindV128Q15mulrSatS
+	OperationKindV128ExtAddPairWise
+	OperationKindV128FloatPromote
+	OperationKindV128FloatDemote
+	OperationKindV128FConvertFromI
+	OperationKindV128Dot
+	OperationKindV128Narrow
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
@@ -1914,4 +1932,67 @@ type OperationV128Q15mulrSatS struct{}
 // Kind implements Operation.Kind
 func (o *OperationV128Q15mulrSatS) Kind() OperationKind {
 	return OperationKindV128Q15mulrSatS
+}
+
+// OperationV128ExtAddPairWise implements Operation.
+type OperationV128ExtAddPairWise struct {
+	// OriginShape is the shape of the original lanes for extension which is
+	// either ShapeI8x16, or ShapeI16x8.
+	OriginShape Shape
+	Signed      bool
+}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128ExtAddPairWise) Kind() OperationKind {
+	return OperationKindV128ExtAddPairWise
+}
+
+// OperationV128FloatPromote implements Operation.
+type OperationV128FloatPromote struct{}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128FloatPromote) Kind() OperationKind {
+	return OperationKindV128FloatPromote
+}
+
+// OperationV128FloatDemote implements Operation.
+type OperationV128FloatDemote struct{}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128FloatDemote) Kind() OperationKind {
+	return OperationKindV128FloatDemote
+}
+
+// OperationV128FConvertFromI implements Operation.
+type OperationV128FConvertFromI struct {
+	// DestinationShape is the shape of the destination lanes for extension which is
+	// either ShapeF32x4, or ShapeF64x2.
+	DestinationShape Shape
+	Signed           bool
+}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128FConvertFromI) Kind() OperationKind {
+	return OperationKindV128FConvertFromI
+}
+
+// OperationV128Dot implements Operation.
+type OperationV128Dot struct{}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128Dot) Kind() OperationKind {
+	return OperationKindV128Dot
+}
+
+// OperationV128Narrow implements Operation.
+type OperationV128Narrow struct {
+	// OriginShape is the shape of the original lanes for extension which is
+	// either ShapeI16x8, or ShapeI32x4.
+	OriginShape Shape
+	Signed      bool
+}
+
+// Kind implements Operation.Kind.
+func (o *OperationV128Narrow) Kind() OperationKind {
+	return OperationKindV128Narrow
 }

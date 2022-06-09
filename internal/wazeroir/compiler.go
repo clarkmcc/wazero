@@ -2728,6 +2728,66 @@ operatorSwitch:
 			c.emit(
 				&OperationV128ExtMul{OriginShape: ShapeI32x4, Signed: false, UseLow: false},
 			)
+		case wasm.OpcodeVecI16x8ExtaddPairwiseI8x16S:
+			c.emit(
+				&OperationV128ExtAddPairWise{OriginShape: ShapeI8x16, Signed: true},
+			)
+		case wasm.OpcodeVecI16x8ExtaddPairwiseI8x16U:
+			c.emit(
+				&OperationV128ExtAddPairWise{OriginShape: ShapeI8x16, Signed: false},
+			)
+		case wasm.OpcodeVecI32x4ExtaddPairwiseI16x8S:
+			c.emit(
+				&OperationV128ExtAddPairWise{OriginShape: ShapeI16x8, Signed: true},
+			)
+		case wasm.OpcodeVecI32x4ExtaddPairwiseI16x8U:
+			c.emit(
+				&OperationV128ExtAddPairWise{OriginShape: ShapeI16x8, Signed: false},
+			)
+		case wasm.OpcodeVecF64x2PromoteLowF32x4Zero:
+			c.emit(
+				&OperationV128FloatPromote{},
+			)
+		case wasm.OpcodeVecF32x4DemoteF64x2Zero:
+			c.emit(
+				&OperationV128FloatDemote{},
+			)
+		case wasm.OpcodeVecF32x4ConvertI32x4S:
+			c.emit(
+				&OperationV128FConvertFromI{DestinationShape: ShapeF32x4, Signed: true},
+			)
+		case wasm.OpcodeVecF32x4ConvertI32x4U:
+			c.emit(
+				&OperationV128FConvertFromI{DestinationShape: ShapeF32x4, Signed: false},
+			)
+		case wasm.OpcodeVecF64x2ConvertLowI32x4S:
+			c.emit(
+				&OperationV128FConvertFromI{DestinationShape: ShapeF64x2, Signed: true},
+			)
+		case wasm.OpcodeVecF64x2ConvertLowI32x4U:
+			c.emit(
+				&OperationV128FConvertFromI{DestinationShape: ShapeF64x2, Signed: false},
+			)
+		case wasm.OpcodeVecI32x4DotI16x8S:
+			c.emit(
+				&OperationV128Dot{},
+			)
+		case wasm.OpcodeVecI8x16NarrowI16x8S:
+			c.emit(
+				&OperationV128Narrow{OriginShape: ShapeI16x8, Signed: true},
+			)
+		case wasm.OpcodeVecI8x16NarrowI16x8U:
+			c.emit(
+				&OperationV128Narrow{OriginShape: ShapeI16x8, Signed: false},
+			)
+		case wasm.OpcodeVecI16x8NarrowI32x4S:
+			c.emit(
+				&OperationV128Narrow{OriginShape: ShapeI32x4, Signed: true},
+			)
+		case wasm.OpcodeVecI16x8NarrowI32x4U:
+			c.emit(
+				&OperationV128Narrow{OriginShape: ShapeI32x4, Signed: false},
+			)
 		default:
 			return fmt.Errorf("unsupported vector instruction in wazeroir: %s", wasm.VectorInstructionName(vecOp))
 		}
