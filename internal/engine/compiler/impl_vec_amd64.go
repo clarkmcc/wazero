@@ -2379,7 +2379,21 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 }
 
 // compileV128Dot implements compiler.compileV128Dot for amd64.
-func (c *amd64Compiler) compileV128Dot(o *wazeroir.OperationV128Dot) error {
+func (c *amd64Compiler) compileV128Dot(*wazeroir.OperationV128Dot) error {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
+		return err
+	}
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
+
+	c.assembler.CompileRegisterToRegister(amd64.PMADDWD, x2.register, x1.register)
+
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
 
