@@ -2408,6 +2408,11 @@ func (c *amd64Compiler) compileV128Dot(*wazeroir.OperationV128Dot) error {
 	return nil
 }
 
+var fConvertFromIMask = [16 * 2]byte{
+	0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43,
+}
+
 // compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
 func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
 	v := c.locationStack.popV128()
@@ -2420,16 +2425,59 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 	case wazeroir.ShapeF32x4:
 		if o.Signed {
 			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PS, vr, vr)
-			c.pushVectorRuntimeValueLocationOnRegister(vr)
-			return nil
+		} else {
+			tmp, err := c.allocateRegister(registerTypeVector)
+			if err != nil {
+				return err
+			}
+
+			// Copy the value into tmp.
+			c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp)
+
+			// Clear the higher 16-bits of tmp.
+			c.assembler.CompileConstToRegister(amd64.PSLLD, 0xa, tmp)
+			c.assembler.CompileConstToRegister(amd64.PSRLD, 0xa, tmp)
+
+			// Subtract the higher 16-bits from vr == clear the lower 16-bits of vr.
+			c.assembler.CompileRegisterToRegister(amd64.PSUBD, tmp, vr)
+
+			// Convert the lower 16-bits in tmp.
+			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PS, tmp, tmp)
+
+			// Left shift by one and convert vr, meaning that halved conversion result of higher 16-bits in vr.
+			c.assembler.CompileConstToRegister(amd64.PSRLD, 1, vr)
+			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PS, vr, vr)
+
+			// Double the converted halved higher 16bits.
+			c.assembler.CompileRegisterToRegister(amd64.ADDPS, vr, vr)
+
+			// Get the conversion result by add tmp (holding lower 16-bit conversion) into vr.
+			c.assembler.CompileRegisterToRegister(amd64.ADDPS, tmp, vr)
 		}
 	case wazeroir.ShapeF64x2:
 		if o.Signed {
 			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PD, vr, vr)
-			c.pushVectorRuntimeValueLocationOnRegister(vr)
-			return nil
+		} else {
+			tmp, err := c.allocateRegister(registerTypeVector)
+			if err != nil {
+				return err
+			}
+
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[:16], tmp); err != nil {
+				return err
+			}
+
+			c.assembler.CompileRegisterToRegister(amd64.UNPCKLPS, tmp, vr)
+
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[16:], tmp); err != nil {
+				return err
+			}
+
+			c.assembler.CompileRegisterToRegister(amd64.SUBPD, tmp, vr)
 		}
 	}
+
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
 
