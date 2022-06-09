@@ -555,29 +555,30 @@ type compiler interface {
 	//  wasm.OpcodeVecI32x4ExtMulLowI16x8SName wasm.OpcodeVecI32x4ExtMulLowI16x8UName
 	// 	wasm.OpcodeVecI32x4ExtMulHighI16x8SName wasm.OpcodeVecI32x4ExtMulHighI16x8UName
 	//  wasm.OpcodeVecI64x2ExtMulLowI32x4SName wasm.OpcodeVecI64x2ExtMulLowI32x4UName
-	// 	wasm.OpcodeVecI64x2ExtMulHighI32x4SName wasm.OpcodeVecI64x2ExtMulHighI32x4UName
+	// 	wasm.OpcodeVecI64x2ExtMulHighI32x4SName wasm.OpcodeVecI64x2ExtMulHighI32x4UName.
 	compileV128ExtMul(*wazeroir.OperationV128ExtMul) error
 	// compileV128Q15mulrSatS adds instructions which are equivalent to wasm.OpcodeVecI16x8Q15mulrSatSName.
 	compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSatS) error
-	// compileV128ExtAddPairWise adds instructions which are equivalent to ...
-	// TODO
+	// compileV128ExtAddPairWise adds instructions which are equivalent to wasm.OpcodeVecXXXXExtaddPairwiseYYYY.
+	// See wasm.OpcodeVecI16x8ExtaddPairwiseI8x16SName wasm.OpcodeVecI16x8ExtaddPairwiseI8x16UName
+	// 	wasm.OpcodeVecI32x4ExtaddPairwiseI16x8SName wasm.OpcodeVecI32x4ExtaddPairwiseI16x8UName.
 	compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error
-	// compileV128FloatPromote adds instructions which are equivalent to ...
-	// TODO
+	// compileV128FloatPromote adds instructions which are equivalent to wasm.OpcodeVecF64x2PromoteLowF32x4ZeroName.
 	compileV128FloatPromote(o *wazeroir.OperationV128FloatPromote) error
-	// compileV128FloatDemote adds instructions which are equivalent to ...
-	// TODO
+	// compileV128FloatDemote adds instructions which are equivalent to wasm.OpcodeVecF32x4DemoteF64x2ZeroName.
 	compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error
-	// compileV128FConvertFromI adds instructions which are equivalent to ...
-	// TODO
+	// compileV128FConvertFromI adds instructions which are equivalent to wasm.OpcodeVecXXXXConvertYYYY.
+	// See wasm.OpcodeVecF32x4ConvertI32x4SName wasm.OpcodeVecF32x4ConvertI32x4UName
+	// 	wasm.OpcodeVecF64x2ConvertLowI32x4SName wasm.OpcodeVecF64x2ConvertLowI32x4UName.
 	compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error
-	// compileV128Dot adds instructions which are equivalent to ...
-	// TODO
+	// compileV128Dot adds instructions which are equivalent to wasm.OpcodeVecI32x4DotI16x8SName.
 	compileV128Dot(o *wazeroir.OperationV128Dot) error
-	// compileV128Narrow adds instructions which are equivalent to ...
-	// TODO
+	// compileV128Narrow adds instructions which are equivalent to wasm.OpcodeVecXXXNarrowYYY.
+	// See wasm.OpcodeVecI8x16NarrowI16x8SName wasm.OpcodeVecI8x16NarrowI16x8UName
+	// 	wasm.OpcodeVecI16x8NarrowI32x4SName wasm.OpcodeVecI16x8NarrowI32x4UName.
 	compileV128Narrow(o *wazeroir.OperationV128Narrow) error
-	// compileV128ITruncSatFromF adds instructions which are equivalent to ...
-	// TODO
+	// compileV128ITruncSatFromF adds instructions which are equivalent to wasm.OpcodeVecXXXTruncSatYYYName
+	// See wasm.OpcodeVecI32x4TruncSatF64x2UZeroName wasm.OpcodeVecI32x4TruncSatF64x2SZeroName
+	// 	wasm.OpcodeVecI32x4TruncSatF32x4UName wasm.OpcodeVecI32x4TruncSatF32x4SName.
 	compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error
 }
