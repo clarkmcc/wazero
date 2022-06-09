@@ -2,6 +2,9 @@ package spectest
 
 import (
 	"embed"
+	"encoding/binary"
+	"fmt"
+	"math"
 	"path"
 	"runtime"
 	"testing"
@@ -20,6 +23,9 @@ var testcases embed.FS
 const enabledFeatures = wasm.Features20220419
 
 func TestCompiler(t *testing.T) {
+
+	fmt.Println(math.Float64frombits(binary.LittleEndian.Uint64([]byte{0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x30, 0x43})))
+	return
 	if !platform.CompilerSupported() {
 		t.Skip()
 	}

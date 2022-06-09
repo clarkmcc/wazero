@@ -2463,16 +2463,24 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 				return err
 			}
 
+			// tmp = [0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[:16], tmp); err != nil {
 				return err
 			}
 
+			// Given that we have vr = [d1, d2, d3, d4], this results in
+			//	vr = [d1, [0x00, 0x00, 0x30, 0x43], d2, [0x00, 0x00, 0x30, 0x43]]
+			//     = [float64(uint32(d1)) + 0x1.0p52, float64(uint32(d2)) + 0x1.0p52]
+			//     ^See https://stackoverflow.com/questions/13269523/can-all-32-bit-ints-be-exactly-represented-as-a-double
 			c.assembler.CompileRegisterToRegister(amd64.UNPCKLPS, tmp, vr)
 
+			// tmp = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43]
+			//     = [0x1.0p52, 0x1.0p52]
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[16:], tmp); err != nil {
 				return err
 			}
 
+			// vr = [float64(uint32(d1)), float64(uint32(d2))]
 			c.assembler.CompileRegisterToRegister(amd64.SUBPD, tmp, vr)
 		}
 	}
