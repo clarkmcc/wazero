@@ -2176,8 +2176,59 @@ func (c *amd64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error
 		// Signed or Zero extend lower half packed bytes to packed words.
 		c.assembler.CompileRegisterToRegister(ext, x1r, x1r)
 		c.assembler.CompileRegisterToRegister(ext, x2r, x2r)
+
+		c.assembler.CompileRegisterToRegister(amd64.PMULLW, x2r, x1r)
+
+	case wazeroir.ShapeI16x8:
+		tmp, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
+		}
+
+		// Copy the value on x1r to tmp.
+		c.assembler.CompileRegisterToRegister(amd64.MOVDQA, x1r, tmp)
+
+		// Multiply the values and store the lower 16-bits into x1r.
+		c.assembler.CompileRegisterToRegister(amd64.PMULLW, x2r, x1r)
+		if o.Signed {
+			// Signed multiply the values and store the higher 16-bits into tmp.
+			c.assembler.CompileRegisterToRegister(amd64.PMULHW, x2r, tmp)
+		} else {
+			// Unsigned multiply the values and store the higher 16-bits into tmp.
+			c.assembler.CompileRegisterToRegister(amd64.PMULHUW, x2r, tmp)
+		}
+
+		// Unpack lower or higher half of vectors (x2r and x1r) and concatenate them.
+		if o.UseLow {
+			c.assembler.CompileRegisterToRegister(amd64.PUNPCKLWD, x2r, x1r)
+		} else {
+			c.assembler.CompileRegisterToRegister(amd64.PUNPCKHWD, x2r, x1r)
+		}
+	case wazeroir.ShapeI32x4:
+		var shuffleOrder byte
+		// Given that the original state of the register is as [v1, v2, v3, v4] where vN = a word,
+		if o.UseLow {
+			// This makes the register as [v1, v1, v2, v2]
+			shuffleOrder = 0b01010000
+		} else {
+			// This makes the register as [v3, v3, v4, v4]
+			shuffleOrder = 0b11111010
+		}
+		// See https://www.felixcloutier.com/x86/pshufd
+		c.assembler.CompileRegisterToRegisterWithArg(amd64.PSHUFD, x1r, x1r, shuffleOrder)
+		c.assembler.CompileRegisterToRegisterWithArg(amd64.PSHUFD, x2r, x2r, shuffleOrder)
+
+		var mul asm.Instruction
+		if o.Signed {
+			mul = amd64.PMULDQ
+		} else {
+			mul = amd64.PMULUDQ
+		}
+		c.assembler.CompileRegisterToRegister(mul, x2r, x1r)
 	}
 
+	c.locationStack.markRegisterUnused(x2r)
+	c.pushVectorRuntimeValueLocationOnRegister(x1r)
 	return nil
 }
 

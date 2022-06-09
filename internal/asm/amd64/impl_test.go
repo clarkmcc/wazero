@@ -1291,7 +1291,13 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			n:    &NodeImpl{Instruction: PMOVZXDQ, SrcReg: RegX10, DstReg: RegX5},
 			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x35, 0xea},
 		},
+		{
+			name: "pmulhw xmm2, xmm1",
+			n:    &NodeImpl{Instruction: PMULHW, SrcReg: RegX1, DstReg: RegX2},
+			exp:  []byte{0x66, 0xf, 0xe5, 0xd1},
+		},
 	}
+
 	for _, tt := range tests {
 		tc := tt
 		t.Run(tc.name, func(t *testing.T) {

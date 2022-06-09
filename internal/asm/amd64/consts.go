@@ -521,6 +521,8 @@ const (
 	PMULDQ
 	// PMULHRSW is the PMULHRSW instruction https://www.felixcloutier.com/x86/pmulhrsw
 	PMULHRSW
+	// PMULHW is the PMULHW instruction https://www.felixcloutier.com/x86/pmulhw
+	PMULHW
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd
@@ -1007,6 +1009,8 @@ func InstructionName(instruction asm.Instruction) string {
 		return "PMULDQ"
 	case PMULHRSW:
 		return "PMULHRSW"
+	case PMULHW:
+		return "PMULHW"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }

@@ -1412,6 +1412,7 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	PMOVZXWD: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x33}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/pmovzx
 	PMOVZXDQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x35}, requireSrcFloat: true, requireDstFloat: true},
+	PMULHW:   {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe5}, requireSrcFloat: true, requireDstFloat: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {
