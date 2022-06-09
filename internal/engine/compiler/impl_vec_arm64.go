@@ -802,3 +802,38 @@ func (c *arm64Compiler) compileV128ExtMul(o *wazeroir.OperationV128ExtMul) error
 func (c *arm64Compiler) compileV128Q15mulrSatS(o *wazeroir.OperationV128Q15mulrSatS) error {
 	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
 }
+
+// compileV128ExtAddPairWise implements compiler.compileV128ExtAddPairWise for arm64.
+func (c *arm64Compiler) compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128FloatPromote implements compiler.compileV128FloatPromote for arm64.
+func (c *arm64Compiler) compileV128FloatPromote(o *wazeroir.OperationV128FloatPromote) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128FloatDemote implements compiler.compileV128FloatDemote for arm64.
+func (c *arm64Compiler) compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128FConvertFromI implements compiler.compileV128FConvertFromI for arm64.
+func (c *arm64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Dot implements compiler.compileV128Dot for arm64.
+func (c *arm64Compiler) compileV128Dot(o *wazeroir.OperationV128Dot) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128Narrow implements compiler.compileV128Narrow for arm64.
+func (c *arm64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}
+
+// compileV128ITruncSatFromF implements compiler.compileV128ITruncSatFromF for arm64.
+func (c *arm64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error {
+	return fmt.Errorf("TODO: %s is not implemented yet on arm64 compiler", o.Kind())
+}

@@ -559,4 +559,25 @@ type compiler interface {
 	compileV128ExtMul(*wazeroir.OperationV128ExtMul) error
 	// compileV128Q15mulrSatS adds instructions which are equivalent to wasm.OpcodeVecI16x8Q15mulrSatSName.
 	compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSatS) error
+	// compileV128ExtAddPairWise adds instructions which are equivalent to ...
+	// TODO
+	compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error
+	// compileV128FloatPromote adds instructions which are equivalent to ...
+	// TODO
+	compileV128FloatPromote(o *wazeroir.OperationV128FloatPromote) error
+	// compileV128FloatDemote adds instructions which are equivalent to ...
+	// TODO
+	compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error
+	// compileV128FConvertFromI adds instructions which are equivalent to ...
+	// TODO
+	compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error
+	// compileV128Dot adds instructions which are equivalent to ...
+	// TODO
+	compileV128Dot(o *wazeroir.OperationV128Dot) error
+	// compileV128Narrow adds instructions which are equivalent to ...
+	// TODO
+	compileV128Narrow(o *wazeroir.OperationV128Narrow) error
+	// compileV128ITruncSatFromF adds instructions which are equivalent to ...
+	// TODO
+	compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error
 }

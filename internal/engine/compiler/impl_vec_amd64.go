@@ -2269,3 +2269,38 @@ func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSat
 	c.pushVectorRuntimeValueLocationOnRegister(x1r)
 	return nil
 }
+
+// compileV128ExtAddPairWise implements compiler.compileV128ExtAddPairWise for amd64.
+func (c *amd64Compiler) compileV128ExtAddPairWise(o *wazeroir.OperationV128ExtAddPairWise) error {
+	return nil
+}
+
+// compileV128FloatPromote implements compiler.compileV128FloatPromote for amd64.
+func (c *amd64Compiler) compileV128FloatPromote(o *wazeroir.OperationV128FloatPromote) error {
+	return nil
+}
+
+// compileV128FloatDemote implements compiler.compileV128FloatDemote for amd64.
+func (c *amd64Compiler) compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error {
+	return nil
+}
+
+// compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
+func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
+	return nil
+}
+
+// compileV128Dot implements compiler.compileV128Dot for amd64.
+func (c *amd64Compiler) compileV128Dot(o *wazeroir.OperationV128Dot) error {
+	return nil
+}
+
+// compileV128Narrow implements compiler.compileV128Narrow for amd64.
+func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error {
+	return nil
+}
+
+// compileV128ITruncSatFromF implements compiler.compileV128ITruncSatFromF for amd64.
+func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error {
+	return nil
+}
