@@ -2255,6 +2255,8 @@ func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSat
 
 	x1r, x2r := x1.register, x2.register
 
+	// TODO: add comments about the logic below.
+
 	if err := c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, q15mulrSatSMask[:], tmp); err != nil {
 		return err
 	}
