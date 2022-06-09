@@ -2410,6 +2410,26 @@ func (c *amd64Compiler) compileV128Dot(*wazeroir.OperationV128Dot) error {
 
 // compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
 func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConvertFromI) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	switch o.DestinationShape {
+	case wazeroir.ShapeF32x4:
+		if o.Signed {
+			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PS, vr, vr)
+			c.pushVectorRuntimeValueLocationOnRegister(vr)
+			return nil
+		}
+	case wazeroir.ShapeF64x2:
+		if o.Signed {
+			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PD, vr, vr)
+			c.pushVectorRuntimeValueLocationOnRegister(vr)
+			return nil
+		}
+	}
 	return nil
 }
 
