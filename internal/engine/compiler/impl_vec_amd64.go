@@ -2627,6 +2627,7 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 			c.assembler.CompileRegisterToRegister(amd64.MINPD, tmp, vr)
 			c.assembler.CompileRegisterToRegister(amd64.CVTTPD2DQ, vr, vr)
 		} else {
+			// TODO: add comments about the following logic
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
 			c.assembler.CompileRegisterToRegister(amd64.MAXPD, tmp, vr)
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4uTruncSatF64x4Mask[:16], tmp2); err != nil {

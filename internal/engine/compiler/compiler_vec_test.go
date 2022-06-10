@@ -6418,3 +6418,213 @@ func TestCompiler_compileV128Q15mulrSatS(t *testing.T) {
 		})
 	}
 }
+
+func TestCompiler_compileFloatPromote(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name   string
+		v, exp [16]byte
+	}{
+		{
+			name: "1",
+			v:    f32x4(float32(0x1.8f867ep+125), float32(0x1.8f867ep+125), float32(0x1.8f867ep+125), float32(0x1.8f867ep+125)),
+			exp:  f64x2(6.6382536710104395e+37, 6.6382536710104395e+37),
+		},
+		{
+			name: "2",
+			v:    f32x4(float32(0x1.8f867ep+125), float32(0x1.8f867ep+125), 0, 0),
+			exp:  f64x2(6.6382536710104395e+37, 6.6382536710104395e+37),
+		},
+		{
+			name: "3",
+			v:    f32x4(0, 0, float32(0x1.8f867ep+125), float32(0x1.8f867ep+125)),
+			exp:  f64x2(0, 0),
+		},
+		{
+			name: "4",
+			v:    f32x4(float32(math.NaN()), float32(math.NaN()), float32(0x1.8f867ep+125), float32(0x1.8f867ep+125)),
+			exp:  f64x2(math.NaN(), math.NaN()),
+		},
+		{
+			name: "5",
+			v:    f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), float32(0x1.8f867ep+125), float32(0x1.8f867ep+125)),
+			exp:  f64x2(math.Inf(1), math.Inf(-1)),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128FloatPromote(&wazeroir.OperationV128FloatPromote{})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			actualFs := [2]float64{
+				math.Float64frombits(lo), math.Float64frombits(hi),
+			}
+			expFs := [2]float64{
+				math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[:8])),
+				math.Float64frombits(binary.LittleEndian.Uint64(tc.exp[8:])),
+			}
+			for i := range expFs {
+				exp, actual := expFs[i], actualFs[i]
+				if math.IsNaN(exp) {
+					require.True(t, math.IsNaN(actual))
+				} else {
+					require.Equal(t, exp, actual)
+				}
+			}
+		})
+	}
+}
+
+func TestCompiler_compileV128FloatDemote(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+
+	tests := []struct {
+		name   string
+		v, exp [16]byte
+	}{
+		{
+			name: "1",
+			v:    f64x2(0, 0),
+			exp:  f32x4(0, 0, 0, 0),
+		},
+		{
+			name: "2",
+			v:    f64x2(0x1.fffffe0000000p-127, 0x1.fffffe0000000p-127),
+			exp:  f32x4(0x1p-126, 0x1p-126, 0, 0),
+		},
+		{
+			name: "3",
+			v:    f64x2(0x1.fffffep+127, 0x1.fffffep+127),
+			exp:  f32x4(0x1.fffffep+127, 0x1.fffffep+127, 0, 0),
+		},
+		{
+			name: "4",
+			v:    f64x2(math.NaN(), math.NaN()),
+			exp:  f32x4(float32(math.NaN()), float32(math.NaN()), 0, 0),
+		},
+		{
+			name: "5",
+			v:    f64x2(math.Inf(1), math.Inf(-1)),
+			exp:  f32x4(float32(math.Inf(1)), float32(math.Inf(-1)), 0, 0),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128FloatDemote(&wazeroir.OperationV128FloatDemote{})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			actualFs := [4]float32{
+				math.Float32frombits(uint32(lo)),
+				math.Float32frombits(uint32(lo >> 32)),
+				math.Float32frombits(uint32(hi)),
+				math.Float32frombits(uint32(hi >> 32))}
+			expFs := [4]float32{
+				math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[:4])),
+				math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[4:8])),
+				math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[8:12])),
+				math.Float32frombits(binary.LittleEndian.Uint32(tc.exp[12:])),
+			}
+			for i := range expFs {
+				exp, actual := expFs[i], actualFs[i]
+				if math.IsNaN(float64(exp)) {
+					require.True(t, math.IsNaN(float64(actual)))
+				} else {
+					require.Equal(t, exp, actual)
+				}
+			}
+		})
+	}
+}
+
+func TestCompiler_compileV128ExtAddPairwise(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+}
+
+func TestCompiler_compileV128FConvertFromI(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+}
+
+func TestCompiler_compileV128Narrow(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+}
+
+func TestCompiler_compileV128ITruncSatFromF(t *testing.T) {
+	if runtime.GOARCH != "amd64" {
+		// TODO: implement on amd64.
+		t.Skip()
+	}
+}
