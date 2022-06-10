@@ -553,6 +553,8 @@ const (
 	CVTPD2PS
 	// PMADDUBSW is the PMADDUBSW instruction https://www.felixcloutier.com/x86/pmaddubsw
 	PMADDUBSW
+	// CVTTPD2DQ is the CVTTPD2DQ instruction https://www.felixcloutier.com/x86/cvttpd2dq
+	CVTTPD2DQ
 
 	// instructionEnd is always placed at the bottom of this iota definition to be used in the test.
 	instructionEnd
@@ -1071,6 +1073,8 @@ func InstructionName(instruction asm.Instruction) string {
 		return "CVTPD2PS"
 	case PMADDUBSW:
 		return "PMADDUBSW"
+	case CVTTPD2DQ:
+		return "CVTTPD2DQ"
 	}
 	panic(fmt.Errorf("unknown instruction %d", instruction))
 }

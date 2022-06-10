@@ -1444,6 +1444,8 @@ var registerToRegisterOpcode = map[asm.Instruction]struct {
 	PACKUSDW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x2b}, requireSrcFloat: true, requireDstFloat: true},
 	// https://www.felixcloutier.com/x86/pmaddubsw
 	PMADDUBSW: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0x38, 0x04}, requireSrcFloat: true, requireDstFloat: true},
+	// https://www.felixcloutier.com/x86/cvttpd2dq
+	CVTTPD2DQ: {mandatoryPrefix: 0x66, opcode: []byte{0x0f, 0xe6}, requireDstFloat: true, requireSrcFloat: true},
 }
 
 var RegisterToRegisterShiftOpcode = map[asm.Instruction]struct {
@@ -2045,7 +2047,7 @@ func (a *AssemblerImpl) EncodeConstToRegister(n *NodeImpl) (err error) {
 
 	isFloatReg := IsVectorRegister(n.DstReg)
 	switch n.Instruction {
-	case PSLLD, PSLLQ, PSRLD, PSRLQ, PSRAW, PSRLW, PSLLW:
+	case PSLLD, PSLLQ, PSRLD, PSRLQ, PSRAW, PSRLW, PSLLW, PSRAD:
 		if !isFloatReg {
 			return fmt.Errorf("%s needs float register but got %s", InstructionName(n.Instruction), RegisterName(n.DstReg))
 		}
@@ -2207,7 +2209,7 @@ func (a *AssemblerImpl) EncodeConstToRegister(n *NodeImpl) (err error) {
 			a.Buf.Write([]byte{0x66, 0x0f, 0x73, modRM})
 			a.WriteConst(n.SrcConst, 8)
 		}
-	case PSRAW:
+	case PSRAW, PSRAD:
 		// https://www.felixcloutier.com/x86/psraw:psrad:psraq
 		modRM := 0b11_000_000 | // Specifying that operand is register.
 			0b00_100_000 | // PSRAW with immediate needs "/4" extension.
@@ -2216,7 +2218,15 @@ func (a *AssemblerImpl) EncodeConstToRegister(n *NodeImpl) (err error) {
 		if rexPrefix != RexPrefixNone {
 			a.Buf.WriteByte(rexPrefix)
 		}
-		a.Buf.Write([]byte{0x0f, 0x71, modRM})
+
+		var op byte
+		if inst == PSRAD {
+			op = 0x72
+		} else {
+			op = 0x71
+		}
+
+		a.Buf.Write([]byte{0x0f, op, modRM})
 		a.WriteConst(n.SrcConst, 8)
 	case PSRLW:
 		// https://www.felixcloutier.com/x86/psrlw:psrld:psrlq

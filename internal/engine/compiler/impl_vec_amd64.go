@@ -2521,6 +2521,11 @@ func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error
 	return nil
 }
 
+var i32x4sTruncSatF64x4Mask = [16]byte{
+	0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
+	0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
+}
+
 // compileV128ITruncSatFromF implements compiler.compileV128ITruncSatFromF for amd64.
 func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error {
 	v := c.locationStack.popV128()
@@ -2572,15 +2577,49 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 
 			// Arithmetic right shifting tmp by 31, meaning that we have
 			// tmp[i] = 0xffffffff if vi is positive, 0 otherwise.
-			c.assembler.CompileConstToRegister(amd64.PSRAD, 0x15, tmp)
+			c.assembler.CompileConstToRegister(amd64.PSRAD, 0x1f, tmp)
 
 			// Flipping 0x80000000 if vi is positive, otherwise keep intact.
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, vr)
 		} else {
+			tmp2, err := c.allocateRegister(registerTypeVector)
+			if err != nil {
+				return err
+			}
 
+			// TODO: add comments about the following logic
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.MAXPS, tmp, vr)
+			c.assembler.CompileRegisterToRegister(amd64.PCMPEQD, tmp, tmp)
+			c.assembler.CompileConstToRegister(amd64.PSRLD, 0x1, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.CVTDQ2PS, tmp, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp2)
+			c.assembler.CompileRegisterToRegister(amd64.CVTTPS2DQ, vr, vr)
+			c.assembler.CompileRegisterToRegister(amd64.SUBPS, tmp, tmp2)
+			c.assembler.CompileRegisterToRegisterWithArg(amd64.CMPPS, tmp2, tmp, 0x2) // == CMPLEPS
+			c.assembler.CompileRegisterToRegister(amd64.CVTTPS2DQ, tmp2, tmp2)
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp2)
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.PMAXSD, tmp, tmp2)
+			c.assembler.CompileRegisterToRegister(amd64.PADDD, tmp2, vr)
+		}
+	case wazeroir.ShapeF64x2:
+		tmp2, err := c.allocateRegister(registerTypeVector)
+		if err != nil {
+			return err
 		}
 
-	case wazeroir.ShapeF64x2:
+		if o.Signed {
+			// TODO: add comments about the following logic
+			c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.CMPEQPD, tmp, tmp)
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4sTruncSatF64x4Mask[:], tmp2); err != nil {
+				return err
+			}
+			c.assembler.CompileRegisterToRegister(amd64.ANDPS, tmp2, tmp)
+			c.assembler.CompileRegisterToRegister(amd64.MINPD, tmp, vr)
+			c.assembler.CompileRegisterToRegister(amd64.CVTTPD2DQ, vr, vr)
+		}
 	}
 
 	c.locationStack.markRegisterUnused(tmp)

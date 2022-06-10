@@ -1371,6 +1371,11 @@ func TestAssemblerImpl_EncodeRegisterToRegister(t *testing.T) {
 			n:    &NodeImpl{Instruction: PMADDUBSW, SrcReg: RegX14, DstReg: RegX1},
 			exp:  []byte{0x66, 0x41, 0xf, 0x38, 0x4, 0xce},
 		},
+		{
+			name: "cvttpd2dq xmm1, xmm14",
+			n:    &NodeImpl{Instruction: CVTTPD2DQ, SrcReg: RegX14, DstReg: RegX1},
+			exp:  []byte{0x66, 0x41, 0xf, 0xe6, 0xce},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1454,6 +1459,16 @@ func TestAssemblerImpl_EncodeConstToRegister(t *testing.T) {
 				DstReg:      RegX10,
 			},
 			exp: []byte{0x66, 0x41, 0xf, 0x71, 0xf2, 0x8},
+		},
+		{
+			name: "psrad xmm10, 0x1f",
+			n: &NodeImpl{
+				Instruction: PSRAD,
+				Types:       OperandTypesRegisterToRegister,
+				SrcConst:    0x1f,
+				DstReg:      RegX10,
+			},
+			exp: []byte{0x66, 0x41, 0xf, 0x72, 0xe2, 0x1f},
 		},
 	}
 
