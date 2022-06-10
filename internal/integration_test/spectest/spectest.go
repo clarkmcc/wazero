@@ -648,6 +648,7 @@ func requireValuesEq(t *testing.T, actual, exps []uint64, valTypes []wasm.ValueT
 		requireValueEq(t, actual[i], exps[i],
 			expectedTypesVectorFlattened[i], laneTypesFlattened[i], msg+"\n"+result)
 	}
+	fmt.Println(result)
 }
 
 func requireValueEq(t *testing.T, actual, expected uint64, valType wasm.ValueType, laneType, msg string) {
@@ -702,6 +703,8 @@ func requireValueEq(t *testing.T, actual, expected uint64, valType wasm.ValueTyp
 			} else {
 				require.Equal(t, expF, actualF, msg)
 			}
+		default:
+			t.Fatalf(laneType)
 		}
 	default:
 		t.Fatal(msg)
