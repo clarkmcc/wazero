@@ -2377,7 +2377,7 @@ func (c *amd64Compiler) compileV128FloatPromote(*wazeroir.OperationV128FloatProm
 }
 
 // compileV128FloatDemote implements compiler.compileV128FloatDemote for amd64.
-func (c *amd64Compiler) compileV128FloatDemote(o *wazeroir.OperationV128FloatDemote) error {
+func (c *amd64Compiler) compileV128FloatDemote(*wazeroir.OperationV128FloatDemote) error {
 	v := c.locationStack.popV128()
 	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
 		return err
@@ -2523,5 +2523,67 @@ func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error
 
 // compileV128ITruncSatFromF implements compiler.compileV128ITruncSatFromF for amd64.
 func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITruncSatFromF) error {
+	v := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+		return err
+	}
+	vr := v.register
+
+	tmp, err := c.allocateRegister(registerTypeVector)
+	if err != nil {
+		return err
+	}
+
+	c.locationStack.markRegisterUsed(tmp)
+
+	switch o.OriginShape {
+	case wazeroir.ShapeF32x4:
+		if o.Signed {
+			// Copy the value into tmp.
+			c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp)
+
+			// Assuming we have vr = [v1, v2, v3, v4].
+			//
+			// Set all bits if lane is not NaN on tmp.
+			// tmp[i] = 0xffffffff  if vi != NaN
+			//        = 0           if vi == NaN
+			c.assembler.CompileRegisterToRegister(amd64.CMPEQPS, tmp, tmp)
+
+			// Clear NaN lanes on vr, meaning that
+			// 	vr[i] = vi  if vi != NaN
+			//	        0   if vi == NaN
+			c.assembler.CompileRegisterToRegister(amd64.ANDPS, tmp, vr)
+
+			// tmp[i] = ^vi         if vi != NaN
+			//        = 0xffffffff  if vi == NaN
+			// which means that tmp[i] & 0x80000000 != 0 if and only if vi is negative.
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, vr, tmp)
+
+			// vr[i] = int32(vi)   if vi != NaN and vr is not overflowing.
+			//       = 0x80000000  if vi != NaN and vr is overflowing (See https://www.felixcloutier.com/x86/cvttps2dq)
+			//       = 0           if vi == NaN
+			c.assembler.CompileRegisterToRegister(amd64.CVTTPS2DQ, vr, vr)
+
+			// Below, we have to convert 0x80000000 into 0x7FFFFFFF for positive overflowing lane.
+			//
+			// tmp[i] = 0x80000000                         if vi is positive
+			//        = any satisfying any&0x80000000 = 0  if vi is negative or zero.
+			c.assembler.CompileRegisterToRegister(amd64.PAND, vr, tmp)
+
+			// Arithmetic right shifting tmp by 31, meaning that we have
+			// tmp[i] = 0xffffffff if vi is positive, 0 otherwise.
+			c.assembler.CompileConstToRegister(amd64.PSRAD, 0x15, tmp)
+
+			// Flipping 0x80000000 if vi is positive, otherwise keep intact.
+			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, vr)
+		} else {
+
+		}
+
+	case wazeroir.ShapeF64x2:
+	}
+
+	c.locationStack.markRegisterUnused(tmp)
+	c.pushVectorRuntimeValueLocationOnRegister(vr)
 	return nil
 }
