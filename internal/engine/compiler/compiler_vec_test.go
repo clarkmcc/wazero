@@ -6994,6 +6994,141 @@ func TestCompiler_compileV128FConvertFromI(t *testing.T) {
 		// TODO: implement on amd64.
 		t.Skip()
 	}
+
+	tests := []struct {
+		name      string
+		destShape wazeroir.Shape
+		signed    bool
+		v, exp    [16]byte
+	}{
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    true,
+			v:         i32x4(0, 0, 0, 0),
+			exp:       f32x4(0, 0, 0, 0),
+		},
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    true,
+			v:         i32x4(1, 0, 2, 3),
+			exp:       f32x4(1, 0, 2.0, 3),
+		},
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    true,
+			v:         i32x4(1234567890, i32ToU32(-2147483648.0), 2147483647, 1234567890),
+			exp:       f32x4(0x1.26580cp+30, -2147483648.0, 2147483647, 0x1.26580cp+30),
+		},
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    false,
+			v:         i32x4(0, 0, 0, 0),
+			exp:       f32x4(0, 0, 0, 0),
+		},
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    false,
+			v:         i32x4(1, 0, 2, 3),
+			exp:       f32x4(1, 0, 2.0, 3),
+		},
+		{
+			name:      "f32x4 s",
+			destShape: wazeroir.ShapeF32x4,
+			signed:    false,
+			v:         i32x4(2147483647, i32ToU32(-2147483648.0), 2147483647, i32ToU32(-1)),
+			exp:       f32x4(2147483648.0, 2147483648.0, 2147483648.0, 4294967295.0),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    true,
+			v:         i32x4(0, 0, 0, 0),
+			exp:       f64x2(0, 0),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    true,
+			v:         i32x4(0, 0, i32ToU32(-1), i32ToU32(-32)),
+			exp:       f64x2(0, 0),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    true,
+			v:         i32x4(2147483647, i32ToU32(-2147483648), 0, 0),
+			exp:       f64x2(2147483647, -2147483648),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    false,
+			v:         i32x4(0, 0, 0, 0),
+			exp:       f64x2(0, 0),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    false,
+			v:         i32x4(0, 0, i32ToU32(-1), i32ToU32(-32)),
+			exp:       f64x2(0, 0),
+		},
+		{
+			name:      "f64x2 s",
+			destShape: wazeroir.ShapeF64x2,
+			signed:    false,
+			v:         i32x4(2147483647, i32ToU32(-2147483648), 0, 0),
+			exp:       f64x2(2147483647, 2147483648),
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.v[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.v[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128FConvertFromI(&wazeroir.OperationV128FConvertFromI{
+				DestinationShape: tc.destShape,
+				Signed:           tc.signed,
+			})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
 }
 
 func TestCompiler_compileV128ITruncSatFromF(t *testing.T) {
