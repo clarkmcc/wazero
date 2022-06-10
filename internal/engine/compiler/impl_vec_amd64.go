@@ -2495,11 +2495,15 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 
 // compileV128Narrow implements compiler.compileV128Narrow for amd64.
 func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error {
-	v := c.locationStack.popV128()
-	if err := c.compileEnsureOnGeneralPurposeRegister(v); err != nil {
+	x2 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x2); err != nil {
 		return err
 	}
-	vr := v.register
+
+	x1 := c.locationStack.popV128()
+	if err := c.compileEnsureOnGeneralPurposeRegister(x1); err != nil {
+		return err
+	}
 
 	var narrow asm.Instruction
 	switch o.OriginShape {
@@ -2516,9 +2520,10 @@ func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error
 			narrow = amd64.PACKUSDW
 		}
 	}
-	c.assembler.CompileRegisterToRegister(narrow, vr, vr)
+	c.assembler.CompileRegisterToRegister(narrow, x2.register, x1.register)
 
-	c.pushVectorRuntimeValueLocationOnRegister(vr)
+	c.locationStack.markRegisterUnused(x2.register)
+	c.pushVectorRuntimeValueLocationOnRegister(x1.register)
 	return nil
 }
 

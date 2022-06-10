@@ -6800,14 +6800,196 @@ func TestCompiler_compileV128ExtAddPairwise(t *testing.T) {
 	}
 }
 
-func TestCompiler_compileV128FConvertFromI(t *testing.T) {
+func TestCompiler_compileV128Narrow(t *testing.T) {
 	if runtime.GOARCH != "amd64" {
 		// TODO: implement on amd64.
 		t.Skip()
 	}
+	tests := []struct {
+		name        string
+		shape       wazeroir.Shape
+		signed      bool
+		x1, x2, exp [16]byte
+	}{
+		{
+			name:   "i16x8 s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			exp:    [16]byte{},
+		},
+		{
+			name:   "i16x8 s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:     i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			exp: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				1, 1, 1, 1, 1, 1, 1, 1,
+			},
+		},
+		{
+			name:   "i16x8 s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			x2:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			exp: [16]byte{
+				1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+		},
+		{
+			name:   "i16x8 s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0),
+			x2:     i16x8(0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff),
+			exp: [16]byte{
+				0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00,
+				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+			},
+		},
+		{
+			name:   "i16x8 s",
+			shape:  wazeroir.ShapeI16x8,
+			signed: true,
+			x1:     i16x8(0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff),
+			x2:     i16x8(i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0),
+			exp: [16]byte{
+				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+				0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00,
+			},
+		},
+		// i
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			exp:    [16]byte{},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			x2:     i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			exp: [16]byte{
+				0, 0, 0, 0, 0, 0, 0, 0,
+				1, 1, 1, 1, 1, 1, 1, 1,
+			},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(1, 1, 1, 1, 1, 1, 1, 1),
+			x2:     i16x8(0, 0, 0, 0, 0, 0, 0, 0),
+			exp: [16]byte{
+				1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 0, 0, 0, 0, 0, 0,
+			},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0),
+			x2:     i16x8(0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff),
+			exp: [16]byte{
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff),
+			x2:     i16x8(i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0, i16ToU16(-0x8000), 0),
+			exp: [16]byte{
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(i16ToU16(-1), 0, i16ToU16(-1), 0, i16ToU16(-1), 0, i16ToU16(-1), 0),
+			x2:     i16x8(0, 0x100, 0, 0x100, 0, 0x100, 0, 0x100),
+			exp: [16]byte{
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
+			},
+		},
+		{
+			name:   "i16x8 u",
+			shape:  wazeroir.ShapeI16x8,
+			signed: false,
+			x1:     i16x8(0, 0x100, 0, 0x100, 0, 0x100, 0, 0x100),
+			x2:     i16x8(i16ToU16(-1), 0, i16ToU16(-1), 0, i16ToU16(-1), 0, i16ToU16(-1), 0),
+			exp: [16]byte{
+				0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			env := newCompilerEnvironment()
+			compiler := env.requireNewCompiler(t, newCompiler,
+				&wazeroir.CompilationResult{HasMemory: true, Signature: &wasm.FunctionType{}})
+
+			err := compiler.compilePreamble()
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x1[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x1[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Const(&wazeroir.OperationV128Const{
+				Lo: binary.LittleEndian.Uint64(tc.x2[:8]),
+				Hi: binary.LittleEndian.Uint64(tc.x2[8:]),
+			})
+			require.NoError(t, err)
+
+			err = compiler.compileV128Narrow(&wazeroir.OperationV128Narrow{
+				OriginShape: tc.shape, Signed: tc.signed,
+			})
+			require.NoError(t, err)
+
+			require.Equal(t, uint64(2), compiler.runtimeValueLocationStack().sp)
+			require.Equal(t, 1, len(compiler.runtimeValueLocationStack().usedRegisters))
+
+			err = compiler.compileReturnFunction()
+			require.NoError(t, err)
+
+			// Generate and run the code under test.
+			code, _, _, err := compiler.compile()
+			require.NoError(t, err)
+			env.exec(code)
+
+			require.Equal(t, nativeCallStatusCodeReturned, env.callEngine().statusCode)
+
+			lo, hi := env.stackTopAsV128()
+			var actual [16]byte
+			binary.LittleEndian.PutUint64(actual[:8], lo)
+			binary.LittleEndian.PutUint64(actual[8:], hi)
+			require.Equal(t, tc.exp, actual)
+		})
+	}
 }
 
-func TestCompiler_compileV128Narrow(t *testing.T) {
+func TestCompiler_compileV128FConvertFromI(t *testing.T) {
 	if runtime.GOARCH != "amd64" {
 		// TODO: implement on amd64.
 		t.Skip()
