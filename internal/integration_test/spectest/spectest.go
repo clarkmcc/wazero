@@ -636,10 +636,10 @@ func requireValuesEq(t *testing.T, actual, exps []uint64, valTypes []wasm.ValueT
 		if tp != wasm.ValueTypeV128 {
 			expectedTypesVectorFlattened = append(expectedTypesVectorFlattened, tp)
 		} else {
+			laneTypesFlattened[len(expectedTypesVectorFlattened)] = laneTypes[i]
 			expectedTypesVectorFlattened = append(expectedTypesVectorFlattened, wasm.ValueTypeV128)
 			laneTypesFlattened[len(expectedTypesVectorFlattened)] = laneTypes[i]
 			expectedTypesVectorFlattened = append(expectedTypesVectorFlattened, wasm.ValueTypeV128)
-			laneTypesFlattened[len(expectedTypesVectorFlattened)+1] = laneTypes[i]
 		}
 	}
 
@@ -648,7 +648,6 @@ func requireValuesEq(t *testing.T, actual, exps []uint64, valTypes []wasm.ValueT
 		requireValueEq(t, actual[i], exps[i],
 			expectedTypesVectorFlattened[i], laneTypesFlattened[i], msg+"\n"+result)
 	}
-	fmt.Println(result)
 }
 
 func requireValueEq(t *testing.T, actual, expected uint64, valType wasm.ValueType, laneType, msg string) {
@@ -704,7 +703,7 @@ func requireValueEq(t *testing.T, actual, expected uint64, valType wasm.ValueTyp
 				require.Equal(t, expF, actualF, msg)
 			}
 		default:
-			t.Fatalf(laneType)
+			t.Fatal("BUG in spectest.go")
 		}
 	default:
 		t.Fatal(msg)
