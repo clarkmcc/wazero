@@ -43,7 +43,6 @@ func TestCompiler(t *testing.T) {
 			return runtime.GOARCH == "amd64"
 		default:
 			return true
-
 		}
 	})
 }

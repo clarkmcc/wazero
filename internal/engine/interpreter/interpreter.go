@@ -3173,7 +3173,6 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			ce.pushValue(retLo)
 			ce.pushValue(retHi)
 			frame.pc++
-
 		case wazeroir.OperationKindV128Mul:
 			x2hi, x2lo := ce.popValue(), ce.popValue()
 			x1hi, x1lo := ce.popValue(), ce.popValue()
