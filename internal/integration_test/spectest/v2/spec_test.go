@@ -2,8 +2,6 @@ package spectest
 
 import (
 	"embed"
-	"fmt"
-	"math"
 	"path"
 	"runtime"
 	"testing"
@@ -51,9 +49,5 @@ func TestCompiler(t *testing.T) {
 }
 
 func TestInterpreter(t *testing.T) {
-
-	v := uint16(0x8000)
-	fmt.Println(int16(v), math.MinInt16)
-
 	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(j string) bool { return true })
 }
