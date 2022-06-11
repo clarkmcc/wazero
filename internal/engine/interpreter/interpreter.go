@@ -3025,7 +3025,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				for i := 0; i < 16; i++ {
 					var v, w byte
 					if i < 8 {
-						v, w = byte(x1Lo>>i*8), byte(x2Lo>>i*8)
+						v, w = byte(x1Lo>>(i*8)), byte(x2Lo>>(i*8))
 					} else {
 						v, w = byte(x1hi>>((i-8)*8)), byte(x2hi>>((i-8)*8))
 					}
@@ -3059,7 +3059,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				for i := 0; i < 8; i++ {
 					var v, w uint16
 					if i < 4 {
-						v, w = uint16(x1Lo>>i*16), uint16(x2Lo>>i*16)
+						v, w = uint16(x1Lo>>(i*16)), uint16(x2Lo>>(i*16))
 					} else {
 						v, w = uint16(x1hi>>((i-4)*16)), uint16(x2hi>>((i-4)*16))
 					}
@@ -3104,7 +3104,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				for i := 0; i < 16; i++ {
 					var v, w byte
 					if i < 8 {
-						v, w = byte(x1Lo>>i*8), byte(x2Lo>>i*8)
+						v, w = byte(x1Lo>>(i*8)), byte(x2Lo>>(i*8))
 					} else {
 						v, w = byte(x1hi>>((i-8)*8)), byte(x2hi>>((i-8)*8))
 					}
@@ -3138,7 +3138,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 				for i := 0; i < 8; i++ {
 					var v, w uint16
 					if i < 4 {
-						v, w = uint16(x1Lo>>i*16), uint16(x2Lo>>i*16)
+						v, w = uint16(x1Lo>>(i*16)), uint16(x2Lo>>(i*16))
 					} else {
 						v, w = uint16(x1hi>>((i-4)*16)), uint16(x2hi>>((i-4)*16))
 					}
@@ -3796,16 +3796,16 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			x1hi, x1Lo := ce.popValue(), ce.popValue()
 			var retLo, retHi uint64
 			for i := 0; i < 8; i++ {
-				var v, w uint16
+				var v, w int16
 				if i < 4 {
-					v, w = uint16(x1Lo>>i*16), uint16(x2Lo>>i*16)
+					v, w = int16(uint16(x1Lo>>(i*16))), int16(uint16(x2Lo>>(i*16)))
 				} else {
-					v, w = uint16(x1hi>>((i-4)*16)), uint16(x2hi>>((i-4)*16))
+					v, w = int16(uint16(x1hi>>((i-4)*16))), int16(uint16(x2hi>>((i-4)*16)))
 				}
 
 				var uv uint64
 				// https://github.com/WebAssembly/spec/blob/main/proposals/simd/SIMD.md#saturating-integer-q-format-rounding-multiplication
-				if calc := ((int64(int16(v)) * int64(int16(w))) + 0x4000) >> 15; calc < math.MinInt16 {
+				if calc := ((int32(v) * int32(w)) + 0x4000) >> 15; calc < math.MinInt16 {
 					uv = uint64(uint16(0x8000))
 				} else if calc > math.MaxInt16 {
 					uv = uint64(uint16(0x7fff))

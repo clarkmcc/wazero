@@ -2,6 +2,8 @@ package spectest
 
 import (
 	"embed"
+	"fmt"
+	"math"
 	"path"
 	"runtime"
 	"testing"
@@ -43,10 +45,15 @@ func TestCompiler(t *testing.T) {
 			return runtime.GOARCH == "amd64"
 		default:
 			return true
+
 		}
 	})
 }
 
 func TestInterpreter(t *testing.T) {
-	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(string) bool { return true })
+
+	v := uint16(0x8000)
+	fmt.Println(int16(v), math.MinInt16)
+
+	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(j string) bool { return true })
 }
