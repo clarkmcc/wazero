@@ -48,5 +48,5 @@ func TestCompiler(t *testing.T) {
 }
 
 func TestInterpreter(t *testing.T) {
-	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(j string) bool { return true })
+	spectest.Run(t, testcases, interpreter.NewEngine, enabledFeatures, func(string) bool { return true })
 }

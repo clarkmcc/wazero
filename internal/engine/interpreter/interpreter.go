@@ -3020,8 +3020,6 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			var retLo, retHi uint64
 			switch op.b1 {
 			case wazeroir.ShapeI8x16:
-				fmt.Println(op.b3)
-
 				for i := 0; i < 16; i++ {
 					var v, w byte
 					if i < 8 {
@@ -3294,13 +3292,11 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 					lo = -lo
 				}
 			case wazeroir.ShapeF32x4:
-				hi = uint64(math.Float32bits(float32(math.Abs(float64(math.Float32frombits(uint32(hi))))))) |
-					(uint64(math.Float32bits(float32(math.Abs(float64(math.Float32frombits(uint32(hi>>32))))))) << 32)
-				lo = uint64(math.Float32bits(float32(math.Abs(float64(math.Float32frombits(uint32(lo))))))) |
-					(uint64(math.Float32bits(float32(math.Abs(float64(math.Float32frombits(uint32(lo>>32))))))) << 32)
+				hi = hi &^ (1<<31 | 1<<63)
+				lo = lo &^ (1<<31 | 1<<63)
 			case wazeroir.ShapeF64x2:
-				hi = math.Float64bits(math.Abs(math.Float64frombits(hi)))
-				lo = math.Float64bits(math.Abs(math.Float64frombits(lo)))
+				hi = hi &^ (1 << 63)
+				lo = lo &^ (1 << 63)
 			}
 			ce.pushValue(lo)
 			ce.pushValue(hi)
@@ -3516,7 +3512,6 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 					uint64(i8RoundingAverage(uint8(x1hi>>24), uint8(x2hi>>24)))<<24 | uint64(i8RoundingAverage(uint8(x1hi>>16), uint8(x2hi>>16)))<<16 |
 					uint64(i8RoundingAverage(uint8(x1hi>>40), uint8(x2hi>>40)))<<40 | uint64(i8RoundingAverage(uint8(x1hi>>32), uint8(x2hi>>32)))<<32 |
 					uint64(i8RoundingAverage(uint8(x1hi>>56), uint8(x2hi>>56)))<<56 | uint64(i8RoundingAverage(uint8(x1hi>>48), uint8(x2hi>>48)))<<48
-				fmt.Println(retLo, retHi)
 			case wazeroir.ShapeI16x8:
 				retLo = uint64(i16RoundingAverage(uint16(x1lo), uint16(x2lo))) |
 					uint64(i16RoundingAverage(uint16(x1lo>>16), uint16(x2lo>>16)))<<16 |
