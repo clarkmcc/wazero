@@ -2408,9 +2408,8 @@ func (c *amd64Compiler) compileV128Dot(*wazeroir.OperationV128Dot) error {
 	return nil
 }
 
-var fConvertFromIMask = [16 * 2]byte{
+var fConvertFromIMask = [16]byte{
 	0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43,
 }
 
 // compileV128FConvertFromI implements compiler.compileV128FConvertFromI for amd64.
@@ -2474,9 +2473,8 @@ func (c *amd64Compiler) compileV128FConvertFromI(o *wazeroir.OperationV128FConve
 			//     ^See https://stackoverflow.com/questions/13269523/can-all-32-bit-ints-be-exactly-represented-as-a-double
 			c.assembler.CompileRegisterToRegister(amd64.UNPCKLPS, tmp, vr)
 
-			// tmp = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43]
-			//     = [float64(0x1.0p52), float64(0x1.0p52)]
-			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, fConvertFromIMask[16:], tmp); err != nil {
+			// tmp = [float64(0x1.0p52), float64(0x1.0p52)]
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, twop52[:], tmp); err != nil {
 				return err
 			}
 
@@ -2527,15 +2525,29 @@ func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error
 }
 
 var (
-	// i32x4sTruncSatF64x4Mask equals [2147483647.0, 2147483647.0] as f64x2 lanes.
-	i32x4sTruncSatF64x4Mask = [16]byte{
-		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
-		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
+	// i32sMaxOnF64x2 holds math.MaxInt32(=2147483647.0) on two f64 lanes.
+	i32sMaxOnF64x2 = [16]byte{
+		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41, // float64(2147483647.0)
+		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41, // float64(2147483647.0)
 	}
 
-	i32x4uTruncSatF64x4Mask = [16 * 2]byte{
-		0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xef, 0x41, 0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xef, 0x41,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43,
+	// i32sMaxOnF64x2 holds math.MaxUint32(=4294967295.0) on two f64 lanes.
+	i32uMaxOnF64x2 = [16]byte{
+		0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xef, 0x41, // float64(4294967295.0)
+		0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xef, 0x41, // float64(4294967295.0)
+	}
+
+	// twop52 holds two float64(0x1.0p52) on two f64 lanes. 0x1.0p52 is special in the sense that
+	// with this exponent, the mantissa represents a corresponding uint32 number, and arithmetics,
+	// like addition or subtraction, the resulted floating point holds exactly the same
+	// bit representations in 32-bit integer on its mantissa.
+	//
+	// Note: the name twop52 is common across various compiler ecosystem.
+	// 	E.g. https://github.com/llvm/llvm-project/blob/92ab024f81e5b64e258b7c3baaf213c7c26fcf40/compiler-rt/lib/builtins/floatdidf.c#L28
+	//  E.g. https://opensource.apple.com/source/clang/clang-425.0.24/src/projects/compiler-rt/lib/floatdidf.c.auto.html
+	twop52 = [16]byte{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, // float64(0x1.0p52)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x43, // float64(0x1.0p52)
 	}
 )
 
@@ -2631,7 +2643,7 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 			c.assembler.CompileRegisterToRegister(amd64.CMPEQPD, tmp, tmp)
 
 			// Load the 2147483647 into tmp2's each lane.
-			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4sTruncSatF64x4Mask[:], tmp2); err != nil {
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32sMaxOnF64x2[:], tmp2); err != nil {
 				return err
 			}
 
@@ -2645,15 +2657,29 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 
 			c.assembler.CompileRegisterToRegister(amd64.CVTTPD2DQ, vr, vr)
 		} else {
-			// TODO: add comments about the following logic
+			/*
+			   //y = i32x4.trunc_sat_f64x2_u_zero(x) is lowered to:
+			   //MOVAPD xmm_y, xmm_x
+			   //XORPD xmm_tmp, xmm_tmp
+			   //MAXPD xmm_y, xmm_tmp
+			   //MINPD xmm_y, [wasm_f64x2_splat(4294967295.0)]
+			   //ROUNDPD xmm_y, xmm_y, 0x0B
+			   //ADDPD xmm_y, [wasm_f64x2_splat(0x1.0p+52)]
+			   //SHUFPS xmm_y, xmm_xmp, 0x88
+			*/
+
+			// Clears all bits on tmp.
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
+
+			//
 			c.assembler.CompileRegisterToRegister(amd64.MAXPD, tmp, vr)
-			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4uTruncSatF64x4Mask[:16], tmp2); err != nil {
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32uMaxOnF64x2[:], tmp2); err != nil {
 				return err
 			}
+
 			c.assembler.CompileRegisterToRegister(amd64.MINPD, tmp2, vr)
 			c.assembler.CompileRegisterToRegisterWithArg(amd64.ROUNDPD, vr, vr, 0x3)
-			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4uTruncSatF64x4Mask[16:], tmp2); err != nil {
+			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, twop52[:], tmp2); err != nil {
 				return err
 			}
 			c.assembler.CompileRegisterToRegister(amd64.ADDPD, tmp2, vr)
