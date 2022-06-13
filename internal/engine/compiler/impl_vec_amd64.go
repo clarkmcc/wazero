@@ -2657,33 +2657,45 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 
 			c.assembler.CompileRegisterToRegister(amd64.CVTTPD2DQ, vr, vr)
 		} else {
-			/*
-			   //y = i32x4.trunc_sat_f64x2_u_zero(x) is lowered to:
-			   //MOVAPD xmm_y, xmm_x
-			   //XORPD xmm_tmp, xmm_tmp
-			   //MAXPD xmm_y, xmm_tmp
-			   //MINPD xmm_y, [wasm_f64x2_splat(4294967295.0)]
-			   //ROUNDPD xmm_y, xmm_y, 0x0B
-			   //ADDPD xmm_y, [wasm_f64x2_splat(0x1.0p+52)]
-			   //SHUFPS xmm_y, xmm_xmp, 0x88
-			*/
-
 			// Clears all bits on tmp.
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
 
-			//
+			//  vr[i] = vi   if vi != NaN && vi > 0
+			//        = 0    if vi == NaN || vi <= 0
 			c.assembler.CompileRegisterToRegister(amd64.MAXPD, tmp, vr)
+
+			// tmp2[i] = float64(math.MaxUint32) = math.MaxUint32
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32uMaxOnF64x2[:], tmp2); err != nil {
 				return err
 			}
 
+			// vr[i] = vi   if vi != NaN && vi > 0 && vi <= math.MaxUint32
+			//       = 0    otherwise
 			c.assembler.CompileRegisterToRegister(amd64.MINPD, tmp2, vr)
+
+			// Round the floating points into integer.
 			c.assembler.CompileRegisterToRegisterWithArg(amd64.ROUNDPD, vr, vr, 0x3)
+
+			// tmp2[i] = float64(0x1.0p52)
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, twop52[:], tmp2); err != nil {
 				return err
 			}
+
+			// vr[i] = float64(0x1.0p52) + float64(uint32(vi)) if vi != NaN && vi > 0 && vi <= math.MaxUint32
+			//       = 0                                       otherwise
+			//
+			// This means that vr[i] holds exactly the same bit of uint32(vi) in its lower 32-bits.
 			c.assembler.CompileRegisterToRegister(amd64.ADDPD, tmp2, vr)
-			c.assembler.CompileRegisterToRegisterWithArg(amd64.SHUFPS, tmp, vr, 0x88)
+
+			// At this point, we have
+			// 	vr  = [uint32(v0), float64(0x1.0p52), uint32(v1), float64(0x1.0p52)]
+			//  tmp = [0, 0, 0, 0]
+			// as 32x4 lanes. Therefore, SHUFPS with 0b00_00_10_00 results in
+			//	vr = [vr[00], vr[10], tmp[00], tmp[00]] = [vr[00], vr[10], 0, 0]
+			// meaning that for i = 0 and 1, we have
+			//  vr[i] = uint32(vi) if vi != NaN && vi > 0 && vi <= math.MaxUint32
+			//        = 0          otherwise.
+			c.assembler.CompileRegisterToRegisterWithArg(amd64.SHUFPS, tmp, vr, 0b00_00_10_00)
 		}
 	}
 
