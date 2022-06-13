@@ -748,7 +748,7 @@ const (
 	//   (if (local.get 0) (then (nop)) (else (nop)))
 	//   return
 	// )
-	// we have the continuation block corresponding to "return" opcode.
+	// we have the continuation block (of if-block) corresponding to "return" opcode.
 	LabelKindContinuation
 )
 
@@ -799,33 +799,41 @@ func (b *BranchTargetDrop) String() (ret string) {
 	return
 }
 
+// OperationUnreachable implements Operation.
 type OperationUnreachable struct{}
 
-func (o *OperationUnreachable) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationUnreachable) Kind() OperationKind {
 	return OperationKindUnreachable
 }
 
+// OperationLabel implements Operation.
 type OperationLabel struct {
 	Label *Label
 }
 
-func (o *OperationLabel) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationLabel) Kind() OperationKind {
 	return OperationKindLabel
 }
 
+// OperationBr implements Operation.
 type OperationBr struct {
 	Target *BranchTarget
 }
 
-func (o *OperationBr) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationBr) Kind() OperationKind {
 	return OperationKindBr
 }
 
+// OperationBrIf implements Operation.
 type OperationBrIf struct {
 	Then, Else *BranchTargetDrop
 }
 
-func (o *OperationBrIf) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationBrIf) Kind() OperationKind {
 	return OperationKindBrIf
 }
 
@@ -833,46 +841,57 @@ type InclusiveRange struct {
 	Start, End int
 }
 
+// OperationBrTable implements Operation.
 type OperationBrTable struct {
 	Targets []*BranchTargetDrop
 	Default *BranchTargetDrop
 }
 
-func (o *OperationBrTable) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationBrTable) Kind() OperationKind {
 	return OperationKindBrTable
 }
 
+// OperationCall implements Operation.
 type OperationCall struct {
 	FunctionIndex uint32
 }
 
-func (o *OperationCall) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationCall) Kind() OperationKind {
 	return OperationKindCall
 }
 
+// OperationCallIndirect implements Operation.
 type OperationCallIndirect struct {
 	TypeIndex, TableIndex uint32
 }
 
-func (o *OperationCallIndirect) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationCallIndirect) Kind() OperationKind {
 	return OperationKindCallIndirect
 }
 
+// OperationDrop implements Operation.
 type OperationDrop struct {
 	// Depths spans across the uint64 value stack at runtime to be dopped by this operation.
 	Depth *InclusiveRange
 }
 
-func (o *OperationDrop) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationDrop) Kind() OperationKind {
 	return OperationKindDrop
 }
 
+// OperationSelect implements Operation.
 type OperationSelect struct{}
 
-func (o *OperationSelect) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationSelect) Kind() OperationKind {
 	return OperationKindSelect
 }
 
+// OperationPick implements Operation.
 type OperationPick struct {
 	// Depth is the location of the pick target in the uint64 value stack at runtime.
 	// If IsTargetVector=true, this points to the location of the lower 64-bits of the vector.
@@ -880,10 +899,12 @@ type OperationPick struct {
 	IsTargetVector bool
 }
 
-func (o *OperationPick) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationPick) Kind() OperationKind {
 	return OperationKindPick
 }
 
+// OperationSwap implements Operation.
 type OperationSwap struct {
 	// Depth is the location of the pick target in the uint64 value stack at runtime.
 	// If IsTargetVector=true, this points the location of the lower 64-bits of the vector.
@@ -891,19 +912,24 @@ type OperationSwap struct {
 	IsTargetVector bool
 }
 
-func (o *OperationSwap) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationSwap) Kind() OperationKind {
 	return OperationKindSwap
 }
 
+// OperationGlobalGet implements Operation.
 type OperationGlobalGet struct{ Index uint32 }
 
-func (o *OperationGlobalGet) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationGlobalGet) Kind() OperationKind {
 	return OperationKindGlobalGet
 }
 
+// OperationGlobalSet implements Operation.
 type OperationGlobalSet struct{ Index uint32 }
 
-func (o *OperationGlobalSet) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationGlobalSet) Kind() OperationKind {
 	return OperationKindGlobalSet
 }
 
@@ -922,15 +948,18 @@ type MemoryArg struct {
 	Offset uint32
 }
 
+// OperationLoad implements Operation.
 type OperationLoad struct {
 	Type UnsignedType
 	Arg  *MemoryArg
 }
 
-func (o *OperationLoad) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationLoad) Kind() OperationKind {
 	return OperationKindLoad
 }
 
+// OperationLoad8 implements Operation.
 type OperationLoad8 struct {
 	Type SignedInt
 	Arg  *MemoryArg
@@ -940,6 +969,7 @@ func (o *OperationLoad8) Kind() OperationKind {
 	return OperationKindLoad8
 }
 
+// OperationLoad16 implements Operation.
 type OperationLoad16 struct {
 	Type SignedInt
 	Arg  *MemoryArg
@@ -949,6 +979,7 @@ func (o *OperationLoad16) Kind() OperationKind {
 	return OperationKindLoad16
 }
 
+// OperationLoad32 implements Operation.
 type OperationLoad32 struct {
 	Signed bool
 	Arg    *MemoryArg
@@ -958,15 +989,18 @@ func (o *OperationLoad32) Kind() OperationKind {
 	return OperationKindLoad32
 }
 
+// OperationStore implements Operation.
 type OperationStore struct {
 	Type UnsignedType
 	Arg  *MemoryArg
 }
 
-func (o *OperationStore) Kind() OperationKind {
+// Kind implements Operation.Kind
+func (*OperationStore) Kind() OperationKind {
 	return OperationKindStore
 }
 
+// OperationStore8 implements Operation.
 type OperationStore8 struct {
 	Arg *MemoryArg
 }
@@ -975,6 +1009,7 @@ func (o *OperationStore8) Kind() OperationKind {
 	return OperationKindStore8
 }
 
+// OperationStore16 implements Operation.
 type OperationStore16 struct {
 	Arg *MemoryArg
 }
@@ -983,6 +1018,7 @@ func (o *OperationStore16) Kind() OperationKind {
 	return OperationKindStore16
 }
 
+// OperationStore32 implements Operation.
 type OperationStore32 struct {
 	Arg *MemoryArg
 }
@@ -992,6 +1028,7 @@ func (o *OperationStore32) Kind() OperationKind {
 	return OperationKindStore32
 }
 
+// OperationMemorySize implements Operation.
 type OperationMemorySize struct{}
 
 // Kind implements Operation.Kind.
@@ -999,6 +1036,7 @@ func (o *OperationMemorySize) Kind() OperationKind {
 	return OperationKindMemorySize
 }
 
+// OperationMemoryGrow implements Operation.
 type OperationMemoryGrow struct{ Alignment uint64 }
 
 // Kind implements Operation.Kind.
@@ -1006,6 +1044,7 @@ func (o *OperationMemoryGrow) Kind() OperationKind {
 	return OperationKindMemoryGrow
 }
 
+// OperationConstI32 implements Operation.
 type OperationConstI32 struct{ Value uint32 }
 
 // Kind implements Operation.Kind.
@@ -1013,6 +1052,7 @@ func (o *OperationConstI32) Kind() OperationKind {
 	return OperationKindConstI32
 }
 
+// OperationConstI64 implements Operation.
 type OperationConstI64 struct{ Value uint64 }
 
 // Kind implements Operation.Kind.
@@ -1020,6 +1060,7 @@ func (o *OperationConstI64) Kind() OperationKind {
 	return OperationKindConstI64
 }
 
+// OperationConstF32 implements Operation.
 type OperationConstF32 struct{ Value float32 }
 
 // Kind implements Operation.Kind.
@@ -1027,6 +1068,7 @@ func (o *OperationConstF32) Kind() OperationKind {
 	return OperationKindConstF32
 }
 
+// OperationConstF64 implements Operation.
 type OperationConstF64 struct{ Value float64 }
 
 // Kind implements Operation.Kind.
@@ -1034,6 +1076,7 @@ func (o *OperationConstF64) Kind() OperationKind {
 	return OperationKindConstF64
 }
 
+// OperationEq implements Operation.
 type OperationEq struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1041,6 +1084,7 @@ func (o *OperationEq) Kind() OperationKind {
 	return OperationKindEq
 }
 
+// OperationNe implements Operation.
 type OperationNe struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1048,6 +1092,7 @@ func (o *OperationNe) Kind() OperationKind {
 	return OperationKindNe
 }
 
+// OperationEqz implements Operation.
 type OperationEqz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1055,6 +1100,7 @@ func (o *OperationEqz) Kind() OperationKind {
 	return OperationKindEqz
 }
 
+// OperationLt implements Operation.
 type OperationLt struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1062,6 +1108,7 @@ func (o *OperationLt) Kind() OperationKind {
 	return OperationKindLt
 }
 
+// OperationGt implements Operation.
 type OperationGt struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1069,6 +1116,7 @@ func (o *OperationGt) Kind() OperationKind {
 	return OperationKindGt
 }
 
+// OperationLe implements Operation.
 type OperationLe struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1076,6 +1124,7 @@ func (o *OperationLe) Kind() OperationKind {
 	return OperationKindLe
 }
 
+// OperationGe implements Operation.
 type OperationGe struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1083,6 +1132,7 @@ func (o *OperationGe) Kind() OperationKind {
 	return OperationKindGe
 }
 
+// OperationAdd implements Operation.
 type OperationAdd struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1090,6 +1140,7 @@ func (o *OperationAdd) Kind() OperationKind {
 	return OperationKindAdd
 }
 
+// OperationSub implements Operation.
 type OperationSub struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1097,6 +1148,7 @@ func (o *OperationSub) Kind() OperationKind {
 	return OperationKindSub
 }
 
+// OperationMul implements Operation.
 type OperationMul struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1104,6 +1156,7 @@ func (o *OperationMul) Kind() OperationKind {
 	return OperationKindMul
 }
 
+// OperationClz implements Operation.
 type OperationClz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1111,6 +1164,7 @@ func (o *OperationClz) Kind() OperationKind {
 	return OperationKindClz
 }
 
+// OperationCtz implements Operation.
 type OperationCtz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1118,6 +1172,7 @@ func (o *OperationCtz) Kind() OperationKind {
 	return OperationKindCtz
 }
 
+// OperationPopcnt implements Operation.
 type OperationPopcnt struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1125,6 +1180,7 @@ func (o *OperationPopcnt) Kind() OperationKind {
 	return OperationKindPopcnt
 }
 
+// OperationDiv implements Operation.
 type OperationDiv struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1132,6 +1188,7 @@ func (o *OperationDiv) Kind() OperationKind {
 	return OperationKindDiv
 }
 
+// OperationRem implements Operation.
 type OperationRem struct{ Type SignedInt }
 
 // Kind implements Operation.Kind.
@@ -1139,6 +1196,7 @@ func (o *OperationRem) Kind() OperationKind {
 	return OperationKindRem
 }
 
+// OperationAnd implements Operation.
 type OperationAnd struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1146,6 +1204,7 @@ func (o *OperationAnd) Kind() OperationKind {
 	return OperationKindAnd
 }
 
+// OperationOr implements Operation.
 type OperationOr struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1153,6 +1212,7 @@ func (o *OperationOr) Kind() OperationKind {
 	return OperationKindOr
 }
 
+// OperationXor implements Operation.
 type OperationXor struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1160,6 +1220,7 @@ func (o *OperationXor) Kind() OperationKind {
 	return OperationKindXor
 }
 
+// OperationShl implements Operation.
 type OperationShl struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1167,6 +1228,7 @@ func (o *OperationShl) Kind() OperationKind {
 	return OperationKindShl
 }
 
+// OperationShr implements Operation.
 type OperationShr struct{ Type SignedInt }
 
 // Kind implements Operation.Kind.
@@ -1174,6 +1236,7 @@ func (o *OperationShr) Kind() OperationKind {
 	return OperationKindShr
 }
 
+// OperationRotl implements Operation.
 type OperationRotl struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1181,6 +1244,7 @@ func (o *OperationRotl) Kind() OperationKind {
 	return OperationKindRotl
 }
 
+// OperationRotr implements Operation.
 type OperationRotr struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1188,6 +1252,7 @@ func (o *OperationRotr) Kind() OperationKind {
 	return OperationKindRotr
 }
 
+// OperationAbs implements Operation.
 type OperationAbs struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1195,6 +1260,7 @@ func (o *OperationAbs) Kind() OperationKind {
 	return OperationKindAbs
 }
 
+// OperationNeg implements Operation.
 type OperationNeg struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1202,6 +1268,7 @@ func (o *OperationNeg) Kind() OperationKind {
 	return OperationKindNeg
 }
 
+// OperationCeil implements Operation.
 type OperationCeil struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1209,6 +1276,7 @@ func (o *OperationCeil) Kind() OperationKind {
 	return OperationKindCeil
 }
 
+// OperationFloor implements Operation.
 type OperationFloor struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1216,6 +1284,7 @@ func (o *OperationFloor) Kind() OperationKind {
 	return OperationKindFloor
 }
 
+// OperationTrunc implements Operation.
 type OperationTrunc struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1223,6 +1292,7 @@ func (o *OperationTrunc) Kind() OperationKind {
 	return OperationKindTrunc
 }
 
+// OperationNearest implements Operation.
 type OperationNearest struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1230,6 +1300,7 @@ func (o *OperationNearest) Kind() OperationKind {
 	return OperationKindNearest
 }
 
+// OperationSqrt implements Operation.
 type OperationSqrt struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1237,6 +1308,7 @@ func (o *OperationSqrt) Kind() OperationKind {
 	return OperationKindSqrt
 }
 
+// OperationMin implements Operation.
 type OperationMin struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1244,6 +1316,7 @@ func (o *OperationMin) Kind() OperationKind {
 	return OperationKindMin
 }
 
+// OperationMax implements Operation.
 type OperationMax struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1251,6 +1324,7 @@ func (o *OperationMax) Kind() OperationKind {
 	return OperationKindMax
 }
 
+// OperationCopysign implements Operation.
 type OperationCopysign struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1258,6 +1332,7 @@ func (o *OperationCopysign) Kind() OperationKind {
 	return OperationKindCopysign
 }
 
+// OperationI32WrapFromI64 implements Operation.
 type OperationI32WrapFromI64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1265,6 +1340,7 @@ func (o *OperationI32WrapFromI64) Kind() OperationKind {
 	return OperationKindI32WrapFromI64
 }
 
+// OperationITruncFromF implements Operation.
 type OperationITruncFromF struct {
 	InputType  Float
 	OutputType SignedInt
@@ -1278,6 +1354,7 @@ func (o *OperationITruncFromF) Kind() OperationKind {
 	return OperationKindITruncFromF
 }
 
+// OperationFConvertFromI implements Operation.
 type OperationFConvertFromI struct {
 	InputType  SignedInt
 	OutputType Float
@@ -1288,6 +1365,7 @@ func (o *OperationFConvertFromI) Kind() OperationKind {
 	return OperationKindFConvertFromI
 }
 
+// OperationF32DemoteFromF64 implements Operation.
 type OperationF32DemoteFromF64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1295,6 +1373,7 @@ func (o *OperationF32DemoteFromF64) Kind() OperationKind {
 	return OperationKindF32DemoteFromF64
 }
 
+// OperationF64PromoteFromF32 implements Operation.
 type OperationF64PromoteFromF32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1302,6 +1381,7 @@ func (o *OperationF64PromoteFromF32) Kind() OperationKind {
 	return OperationKindF64PromoteFromF32
 }
 
+// OperationI32ReinterpretFromF32 implements Operation.
 type OperationI32ReinterpretFromF32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1309,6 +1389,7 @@ func (o *OperationI32ReinterpretFromF32) Kind() OperationKind {
 	return OperationKindI32ReinterpretFromF32
 }
 
+// OperationI64ReinterpretFromF64 implements Operation.
 type OperationI64ReinterpretFromF64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1316,6 +1397,7 @@ func (o *OperationI64ReinterpretFromF64) Kind() OperationKind {
 	return OperationKindI64ReinterpretFromF64
 }
 
+// OperationF32ReinterpretFromI32 implements Operation.
 type OperationF32ReinterpretFromI32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1323,6 +1405,7 @@ func (o *OperationF32ReinterpretFromI32) Kind() OperationKind {
 	return OperationKindF32ReinterpretFromI32
 }
 
+// OperationF64ReinterpretFromI64 implements Operation.
 type OperationF64ReinterpretFromI64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1330,12 +1413,14 @@ func (o *OperationF64ReinterpretFromI64) Kind() OperationKind {
 	return OperationKindF64ReinterpretFromI64
 }
 
+// OperationExtend implements Operation.
 type OperationExtend struct{ Signed bool }
 
 func (o *OperationExtend) Kind() OperationKind {
 	return OperationKindExtend
 }
 
+// OperationSignExtend32From8 implements Operation.
 type OperationSignExtend32From8 struct{}
 
 // Kind implements Operation.Kind.
@@ -1343,6 +1428,7 @@ func (o *OperationSignExtend32From8) Kind() OperationKind {
 	return OperationKindSignExtend32From8
 }
 
+// OperationSignExtend32From16 implements Operation.
 type OperationSignExtend32From16 struct{}
 
 // Kind implements Operation.Kind.
@@ -1350,6 +1436,7 @@ func (o *OperationSignExtend32From16) Kind() OperationKind {
 	return OperationKindSignExtend32From16
 }
 
+// OperationSignExtend64From8 implements Operation.
 type OperationSignExtend64From8 struct{}
 
 // Kind implements Operation.Kind.
@@ -1357,6 +1444,7 @@ func (o *OperationSignExtend64From8) Kind() OperationKind {
 	return OperationKindSignExtend64From8
 }
 
+// OperationSignExtend64From16 implements Operation.
 type OperationSignExtend64From16 struct{}
 
 // Kind implements Operation.Kind.
@@ -1364,6 +1452,7 @@ func (o *OperationSignExtend64From16) Kind() OperationKind {
 	return OperationKindSignExtend64From16
 }
 
+// OperationSignExtend64From32 implements Operation.
 type OperationSignExtend64From32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1382,6 +1471,7 @@ func (o *OperationMemoryInit) Kind() OperationKind {
 	return OperationKindMemoryInit
 }
 
+// OperationDataDrop implements Operation.
 type OperationDataDrop struct {
 	// DataIndex is the index of the data instance in ModuleInstance.DataInstances
 	// which this operation drops.
@@ -1393,6 +1483,7 @@ func (o *OperationDataDrop) Kind() OperationKind {
 	return OperationKindDataDrop
 }
 
+// OperationMemoryCopy implements Operation.
 type OperationMemoryCopy struct{}
 
 // Kind implements Operation.Kind.
@@ -1400,6 +1491,7 @@ func (o *OperationMemoryCopy) Kind() OperationKind {
 	return OperationKindMemoryCopy
 }
 
+// OperationMemoryFill implements Operation.
 type OperationMemoryFill struct{}
 
 // Kind implements Operation.Kind.
@@ -1407,6 +1499,7 @@ func (o *OperationMemoryFill) Kind() OperationKind {
 	return OperationKindMemoryFill
 }
 
+// OperationTableInit implements Operation.
 type OperationTableInit struct {
 	// ElemIndex is the index of the element by which this operation initializes a part of the table.
 	ElemIndex uint32
@@ -1419,6 +1512,7 @@ func (o *OperationTableInit) Kind() OperationKind {
 	return OperationKindTableInit
 }
 
+// OperationElemDrop implements Operation.
 type OperationElemDrop struct {
 	// ElemIndex is the index of the element which this operation drops.
 	ElemIndex uint32
@@ -1429,6 +1523,7 @@ func (o *OperationElemDrop) Kind() OperationKind {
 	return OperationKindElemDrop
 }
 
+// OperationTableCopy implements Operation.
 type OperationTableCopy struct {
 	SrcTableIndex, DstTableIndex uint32
 }
