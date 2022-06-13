@@ -800,6 +800,8 @@ func (b *BranchTargetDrop) String() (ret string) {
 }
 
 // OperationUnreachable implements Operation.
+//
+// OperationUnreachable corresponds to wasm.OpcodeUnreachable.
 type OperationUnreachable struct{}
 
 // Kind implements Operation.Kind
@@ -808,6 +810,8 @@ func (*OperationUnreachable) Kind() OperationKind {
 }
 
 // OperationLabel implements Operation.
+//
+// This is used to inform the engines of the beginning of a label.
 type OperationLabel struct {
 	Label *Label
 }
@@ -818,6 +822,8 @@ func (*OperationLabel) Kind() OperationKind {
 }
 
 // OperationBr implements Operation.
+//
+// The engines are expected to branch into OperationBr.Target label.
 type OperationBr struct {
 	Target *BranchTarget
 }
@@ -828,6 +834,9 @@ func (*OperationBr) Kind() OperationKind {
 }
 
 // OperationBrIf implements Operation.
+//
+// The engines are expected to pop a value and branch into OperationBrIf.Then label if the value equals 1.
+// Otherwise, the code branches into OperationBrIf.Else label.
 type OperationBrIf struct {
 	Then, Else *BranchTargetDrop
 }
@@ -837,11 +846,19 @@ func (*OperationBrIf) Kind() OperationKind {
 	return OperationKindBrIf
 }
 
-type InclusiveRange struct {
-	Start, End int
-}
-
 // OperationBrTable implements Operation.
+//
+// This corresponds to wasm.OpcodeBrTableName except that the label
+// here means the wazeroir level, not the ones of Wasm.
+//
+// The engines are expected to do the br_table operation base on the
+// OperationBrTable.Default and OperationBrTable.Targets. More precisely,
+// this pops a value from the stack (called "index") and decide which branch we go into next
+// based on the value.
+//
+// For example, assume we have operations like {default: L_DEFAULT, targets: [L0, L1, L2]}.
+// If "index" >= len(defaults), then branch into the L_DEFAULT label.
+// Otherwise, we enter label of targets[index].
 type OperationBrTable struct {
 	Targets []*BranchTargetDrop
 	Default *BranchTargetDrop
@@ -853,6 +870,9 @@ func (*OperationBrTable) Kind() OperationKind {
 }
 
 // OperationCall implements Operation.
+//
+// This corresponds to wasm.OpcodeCallName, and engines are expected to
+// enter into a function whose index equals OperationCall.FunctionIndex.
 type OperationCall struct {
 	FunctionIndex uint32
 }
@@ -863,6 +883,18 @@ func (*OperationCall) Kind() OperationKind {
 }
 
 // OperationCallIndirect implements Operation.
+//
+// This corresponds to wasm.OpcodeCallIndirectName, and engines are expected to
+// consume the one value from the top of stack (called "offset"),
+// and make a function call against the function whose function address equals
+// Tables[OperationCallIndirect.TableIndex][offset].
+//
+// Note: This is called indirect function call in the sense that the target function is indirectly
+// determined by the current state (top value) of the stack.
+// Therefore, two checks are performed at runtime before entering the target function:
+// 1) If "offset" exceeds the length of table, the function exits with nativeCallStatusCodeInvalidTableAccess.
+// 2) If the type of the function table[offset] doesn't match the specified function type, the function exits with nativeCallStatusCodeTypeMismatchOnIndirectCall.
+// Otherwise, we successfully enter the target function.
 type OperationCallIndirect struct {
 	TypeIndex, TableIndex uint32
 }
@@ -872,9 +904,17 @@ func (*OperationCallIndirect) Kind() OperationKind {
 	return OperationKindCallIndirect
 }
 
+// InclusiveRange is the range which spans across the value stack starting from the top to the bottom.
+type InclusiveRange struct {
+	Start, End int
+}
+
 // OperationDrop implements Operation.
+//
+// The engines are expected to discard the values selected by OperationDrop.Depth which
+// starts from the top of the stack to the bottom.
 type OperationDrop struct {
-	// Depths spans across the uint64 value stack at runtime to be dopped by this operation.
+	// Depths spans across the uint64 value stack at runtime to be dropped by this operation.
 	Depth *InclusiveRange
 }
 
@@ -892,6 +932,9 @@ func (*OperationSelect) Kind() OperationKind {
 }
 
 // OperationPick implements Operation.
+//
+// The engines are expected to copy a value pointed by OperationPick.Depth, and push the
+// copied value onto the top of the stack.
 type OperationPick struct {
 	// Depth is the location of the pick target in the uint64 value stack at runtime.
 	// If IsTargetVector=true, this points to the location of the lower 64-bits of the vector.
@@ -905,6 +948,9 @@ func (*OperationPick) Kind() OperationKind {
 }
 
 // OperationSwap implements Operation.
+//
+// The engines are expected to swap the top value of the stack and the one specified by
+// OperationSwap.Depth.
 type OperationSwap struct {
 	// Depth is the location of the pick target in the uint64 value stack at runtime.
 	// If IsTargetVector=true, this points the location of the lower 64-bits of the vector.
@@ -918,6 +964,11 @@ func (*OperationSwap) Kind() OperationKind {
 }
 
 // OperationGlobalGet implements Operation.
+//
+// The engines are expected to read the global value specified by OperationGlobalGet.Index,
+// and push the copy of the value onto the stack.
+//
+// See wasm.OpcodeGlobalGet.
 type OperationGlobalGet struct{ Index uint32 }
 
 // Kind implements Operation.Kind
@@ -926,6 +977,11 @@ func (*OperationGlobalGet) Kind() OperationKind {
 }
 
 // OperationGlobalSet implements Operation.
+//
+// The engines are expected to consume the value from the top of the stack,
+// and write the value into the global specified by OperationGlobalSet.Index.
+//
+// See wasm.OpcodeGlobalSet.
 type OperationGlobalSet struct{ Index uint32 }
 
 // Kind implements Operation.Kind
