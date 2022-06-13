@@ -407,7 +407,7 @@ func (c *compiler) wasmOpcodeSignature(op wasm.Opcode, index uint32) (*signature
 		return signature_F32_I64, nil
 	case wasm.OpcodeI64TruncF64S, wasm.OpcodeI64TruncF64U:
 		return signature_F64_I64, nil
-	case wasm.OpcodeF32ConvertI32s, wasm.OpcodeF32ConvertI32U:
+	case wasm.OpcodeF32ConvertI32S, wasm.OpcodeF32ConvertI32U:
 		return signature_I32_F32, nil
 	case wasm.OpcodeF32ConvertI64S, wasm.OpcodeF32ConvertI64U:
 		return signature_I64_F32, nil

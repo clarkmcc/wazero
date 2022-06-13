@@ -924,6 +924,11 @@ func (*OperationDrop) Kind() OperationKind {
 }
 
 // OperationSelect implements Operation.
+//
+// This corresponds to wasm.OpcodeSelect.
+//
+// The engines are expected to pop three values, say [..., x2, x1, c], then if the value "c" equals zero,
+// "x1" is pushed back onto the stack and, otherwise "x2" is pushed back.
 type OperationSelect struct{}
 
 // Kind implements Operation.Kind
@@ -1576,6 +1581,11 @@ func (OperationCopysign) Kind() OperationKind {
 }
 
 // OperationI32WrapFromI64 implements Operation.
+//
+// This corresponds to wasm.OpcodeI32WrapI64 and equivalent to uint64(uint32(v)) in Go.
+//
+// The engines are expected to replace the 64-bit int on top of the stack
+// with the corresponding 32-bit integer.
 type OperationI32WrapFromI64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1584,6 +1594,21 @@ func (OperationI32WrapFromI64) Kind() OperationKind {
 }
 
 // OperationITruncFromF implements Operation.
+//
+// This corresponds to
+// 	wasm.OpcodeI32TruncF32SName wasm.OpcodeI32TruncF32UName wasm.OpcodeI32TruncF64SName
+// 	wasm.OpcodeI32TruncF64UName wasm.OpcodeI64TruncF32SName wasm.OpcodeI64TruncF32UName wasm.OpcodeI64TruncF64SName
+//	wasm.OpcodeI64TruncF64UName. wasm.OpcodeI32TruncSatF32SName wasm.OpcodeI32TruncSatF32UName
+// 	wasm.OpcodeI32TruncSatF64SName wasm.OpcodeI32TruncSatF64UName wasm.OpcodeI64TruncSatF32SName
+//	wasm.OpcodeI64TruncSatF32UName wasm.OpcodeI64TruncSatF64SName wasm.OpcodeI64TruncSatF64UName
+//
+// See [1] and [2] for when we encounter undefined behavior in the WebAssembly specification if OperationITruncFromF.NonTrapping == false.
+// To summarize, if the source float value is NaN or doesn't fit in the destination range of integers (incl. +=Inf),
+// then the runtime behavior is undefined. In wazero, the engines are expected to exit the execution in these undefined cases with
+// wasmruntime.ErrRuntimeInvalidConversionToInteger error.
+//
+// [1] https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#-hrefop-trunc-umathrmtruncmathsfu_m-n-z for unsigned integers.
+// [2] https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#-hrefop-trunc-smathrmtruncmathsfs_m-n-z for signed integers.
 type OperationITruncFromF struct {
 	InputType  Float
 	OutputType SignedInt
@@ -1598,6 +1623,11 @@ func (OperationITruncFromF) Kind() OperationKind {
 }
 
 // OperationFConvertFromI implements Operation.
+//
+// This corresponds to
+// 	wasm.OpcodeF32ConvertI32SName wasm.OpcodeF32ConvertI32UName wasm.OpcodeF32ConvertI64SName wasm.OpcodeF32ConvertI64UName
+// 	wasm.OpcodeF64ConvertI32SName wasm.OpcodeF64ConvertI32UName wasm.OpcodeF64ConvertI64SName wasm.OpcodeF64ConvertI64UName
+// and equivalent to float32(uint32(x)), float32(int32(x)), etc in Go.
 type OperationFConvertFromI struct {
 	InputType  SignedInt
 	OutputType Float
@@ -1609,6 +1639,8 @@ func (OperationFConvertFromI) Kind() OperationKind {
 }
 
 // OperationF32DemoteFromF64 implements Operation.
+//
+// This corresponds to wasm.OpcodeF32DemoteF64 and is equivalent float32(float64(v)).
 type OperationF32DemoteFromF64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1617,6 +1649,8 @@ func (OperationF32DemoteFromF64) Kind() OperationKind {
 }
 
 // OperationF64PromoteFromF32 implements Operation.
+//
+// This corresponds to wasm.OpcodeF64PromoteF32 and is equivalent float64(float32(v)).
 type OperationF64PromoteFromF32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1625,6 +1659,8 @@ func (OperationF64PromoteFromF32) Kind() OperationKind {
 }
 
 // OperationI32ReinterpretFromF32 implements Operation.
+//
+// This corresponds to wasm.OpcodeI32ReinterpretF32Name.
 type OperationI32ReinterpretFromF32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1633,6 +1669,8 @@ func (OperationI32ReinterpretFromF32) Kind() OperationKind {
 }
 
 // OperationI64ReinterpretFromF64 implements Operation.
+//
+// This corresponds to wasm.OpcodeI64ReinterpretF64Name.
 type OperationI64ReinterpretFromF64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1641,6 +1679,8 @@ func (OperationI64ReinterpretFromF64) Kind() OperationKind {
 }
 
 // OperationF32ReinterpretFromI32 implements Operation.
+//
+// This corresponds to wasm.OpcodeF32ReinterpretI32Name.
 type OperationF32ReinterpretFromI32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1649,6 +1689,8 @@ func (OperationF32ReinterpretFromI32) Kind() OperationKind {
 }
 
 // OperationF64ReinterpretFromI64 implements Operation.
+//
+// This corresponds to wasm.OpcodeF64ReinterpretI64Name.
 type OperationF64ReinterpretFromI64 struct{}
 
 // Kind implements Operation.Kind.
@@ -1657,13 +1699,25 @@ func (OperationF64ReinterpretFromI64) Kind() OperationKind {
 }
 
 // OperationExtend implements Operation.
+//
+// This corresponds to wasm.OpcodeI64ExtendI32SName wasm.OpcodeI64ExtendI32UName
+//
+// The engines are expected to extend the 32-bit signed or unsigned int on top of the stack
+// as a 64-bit integer of corresponding signedness. For unsigned case, this is just reinterpreting the
+// underlying bit pattern as 64-bit integer. For signed case, this is sign-extension which preserves the
+// original integer's sign.
 type OperationExtend struct{ Signed bool }
 
+// Kind implements Operation.Kind.
 func (OperationExtend) Kind() OperationKind {
 	return OperationKindExtend
 }
 
 // OperationSignExtend32From8 implements Operation.
+//
+// This corresponds to wasm.OpcodeI32Extend8SName.
+//
+// The engines are expected to sign-extend the first 8-bits of 32-bit in as signed 32-bit int.
 type OperationSignExtend32From8 struct{}
 
 // Kind implements Operation.Kind.
@@ -1672,6 +1726,10 @@ func (OperationSignExtend32From8) Kind() OperationKind {
 }
 
 // OperationSignExtend32From16 implements Operation.
+//
+// This corresponds to wasm.OpcodeI32Extend16SName.
+//
+// The engines are expected to sign-extend the first 16-bits of 32-bit in as signed 32-bit int.
 type OperationSignExtend32From16 struct{}
 
 // Kind implements Operation.Kind.
@@ -1680,6 +1738,10 @@ func (OperationSignExtend32From16) Kind() OperationKind {
 }
 
 // OperationSignExtend64From8 implements Operation.
+//
+// This corresponds to wasm.OpcodeI64Extend8SName.
+//
+// The engines are expected to sign-extend the first 8-bits of 64-bit in as signed 32-bit int.
 type OperationSignExtend64From8 struct{}
 
 // Kind implements Operation.Kind.
@@ -1688,6 +1750,10 @@ func (OperationSignExtend64From8) Kind() OperationKind {
 }
 
 // OperationSignExtend64From16 implements Operation.
+//
+// This corresponds to wasm.OpcodeI64Extend16SName.
+//
+// The engines are expected to sign-extend the first 16-bits of 64-bit in as signed 32-bit int.
 type OperationSignExtend64From16 struct{}
 
 // Kind implements Operation.Kind.
@@ -1696,6 +1762,10 @@ func (OperationSignExtend64From16) Kind() OperationKind {
 }
 
 // OperationSignExtend64From32 implements Operation.
+//
+// This corresponds to wasm.OpcodeI64Extend32SName.
+//
+// The engines are expected to sign-extend the first 32-bits of 64-bit in as signed 32-bit int.
 type OperationSignExtend64From32 struct{}
 
 // Kind implements Operation.Kind.
@@ -1703,6 +1773,7 @@ func (OperationSignExtend64From32) Kind() OperationKind {
 	return OperationKindSignExtend64From32
 }
 
+// OperationMemoryInit implements Operation.
 type OperationMemoryInit struct {
 	// DataIndex is the index of the data instance in ModuleInstance.DataInstances
 	// by which this operation instantiates a part of the memory.

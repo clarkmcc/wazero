@@ -44,9 +44,7 @@ type compiler interface {
 	compileCallIndirect(o *wazeroir.OperationCallIndirect) error
 	// compileDrop adds instructions to perform wazeroir.OperationDrop.
 	compileDrop(o *wazeroir.OperationDrop) error
-	// compileSelect uses top three values on the stack. For example, if we have stack as [..., x1, x2, c]
-	// and the value "c" equals zero, then the stack results in [..., x1], otherwise, [..., x2].
-	// See wasm.OpcodeSelect
+	// compileSelect adds instructions to perform wazeroir.OperationSelect.
 	compileSelect() error
 	// compilePick adds instructions to perform wazeroir.OperationPick.
 	compilePick(o *wazeroir.OperationPick) error
@@ -100,57 +98,25 @@ type compiler interface {
 	compileMax(o *wazeroir.OperationMax) error
 	// compileCopysign adds instructions to perform wazeroir.OperationCopysign.
 	compileCopysign(o *wazeroir.OperationCopysign) error
-	// compileI32WrapFromI64 adds instructions to replace the 64-bit int on top of the stack
-	// with the corresponding 32-bit integer. This is equivalent to uint64(uint32(v)) in Go.
-	// See wasm.OpcodeI32WrapI64.
+	// compileI32WrapFromI64 adds instructions to perform wazeroir.OperationI32WrapFromI64.
 	compileI32WrapFromI64() error
-	// compileITruncFromF adds instructions to replace the top value of float type on the stack with
-	// the corresponding int value. This is equivalent to int32(math.Trunc(float32(x))), uint32(math.Trunc(float64(x))), etc in Go.
-	//
-	// Please refer to [1] and [2] for when we encounter undefined behavior in the WebAssembly specification.
-	// To summarize, if the source float value is NaN or doesn't fit in the destination range of integers (incl. +=Inf),
-	// then the runtime behavior is undefined. In wazero, we exit the function in these undefined cases with
-	// nativeCallStatusCodeInvalidFloatToIntConversion or nativeCallStatusIntegerOverflow status code.
-	// [1] https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#-hrefop-trunc-umathrmtruncmathsfu_m-n-z for unsigned integers.
-	// [2] https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#-hrefop-trunc-smathrmtruncmathsfs_m-n-z for signed integers.
-	// See OpcodeI32TruncF32S OpcodeI32TruncF32U OpcodeI32TruncF64S OpcodeI32TruncF64U
-	// See OpcodeI64TruncF32S OpcodeI64TruncF32U OpcodeI64TruncF64S OpcodeI64TruncF64U
+	// compileITruncFromF adds instructions to perform wazeroir.OperationITruncFromF.
 	compileITruncFromF(o *wazeroir.OperationITruncFromF) error
-	// compileFConvertFromI adds instructions to replace the top value of int type on the stack with
-	// the corresponding float value. This is equivalent to float32(uint32(x)), float32(int32(x)), etc in Go.
-	// See OpcodeI32ConvertF32S OpcodeI32ConvertF32U OpcodeI32ConvertF64S OpcodeI32ConvertF64U
-	// See OpcodeI64ConvertF32S OpcodeI64ConvertF32U OpcodeI64ConvertF64S OpcodeI64ConvertF64U
+	// compileFConvertFromI adds instructions to perform wazeroir.OperationFConvertFromI.
 	compileFConvertFromI(o *wazeroir.OperationFConvertFromI) error
-	// compileF32DemoteFromF64 adds instructions to replace the 64-bit float on top of the stack
-	// with the corresponding 32-bit float. This is equivalent to float32(float64(v)) in Go.
-	// See wasm.OpcodeF32DemoteF64
+	// compileF32DemoteFromF64 adds instructions to perform wazeroir.OperationF32DemoteFromF64.
 	compileF32DemoteFromF64() error
-	// compileF64PromoteFromF32 adds instructions to replace the 32-bit float on top of the stack
-	// with the corresponding 64-bit float. This is equivalent to float64(float32(v)) in Go.
-	// See wasm.OpcodeF64PromoteF32
+	// compileF64PromoteFromF32 adds instructions to perform wazeroir.OperationF64PromoteFromF32.
 	compileF64PromoteFromF32() error
-	// compileI32ReinterpretFromF32 adds instructions to reinterpret the 32-bit float on top of the stack
-	// as a 32-bit integer by preserving the bit representation. If the value is on the stack,
-	// this is no-op as there is nothing to do for converting type.
-	// See wasm.OpcodeI32ReinterpretF32.
+	// compileI32ReinterpretFromF32 adds instructions to perform wazeroir.OperationI32ReinterpretFromF32.
 	compileI32ReinterpretFromF32() error
-	// compileI64ReinterpretFromF64 adds instructions to reinterpret the 64-bit float on top of the stack
-	// as a 64-bit integer by preserving the bit representation.
-	// See wasm.OpcodeI64ReinterpretF64.
+	// compileI64ReinterpretFromF64 adds instructions to perform wazeroir.OperationI64ReinterpretFromF64.
 	compileI64ReinterpretFromF64() error
-	// compileF32ReinterpretFromI32 adds instructions to reinterpret the 32-bit int on top of the stack
-	// as a 32-bit float by preserving the bit representation.
-	// See wasm.OpcodeF32ReinterpretI32.
+	// compileF32ReinterpretFromI32 adds instructions to perform wazeroir.OperationF32ReinterpretFromI32.
 	compileF32ReinterpretFromI32() error
-	// compileF64ReinterpretFromI64 adds instructions to reinterpret the 64-bit int on top of the stack
-	// as a 64-bit float by preserving the bit representation.
-	// See wasm.OpcodeF64ReinterpretI64.
+	// compileF64ReinterpretFromI64 adds instructions to perform wazeroir.OperationF64ReinterpretFromI64.
 	compileF64ReinterpretFromI64() error
-	// compileExtend adds instructions to extend the 32-bit signed or unsigned int on top of the stack
-	// as a 64-bit integer of corresponding signedness. For unsigned case, this is just reinterpreting the
-	// underlying bit pattern as 64-bit integer. For signed case, this is sign-extension which preserves the
-	// original integer's sign.
-	// See wasm.OpcodeI64ExtendI32S wasm.OpcodeI64ExtendI32U
+	// compileExtend adds instructions to perform wazeroir.OperationExtend.
 	compileExtend(o *wazeroir.OperationExtend) error
 	// compileEq adds instructions to perform wazeroir.OperationEq.
 	compileEq(o *wazeroir.OperationEq) error
@@ -194,20 +160,15 @@ type compiler interface {
 	compileConstF32(o *wazeroir.OperationConstF32) error
 	// compileConstF64 adds instruction to perform wazeroir.OperationConstF64.
 	compileConstF64(o *wazeroir.OperationConstF64) error
-	// compileSignExtend32From8 adds instruction to sign-extends the first 8-bits of 32-bit in as signed 32-bit int.
-	// See wasm.OpcodeI32Extend8S
+	// compileSignExtend32From8 adds instructions to perform wazeroir.OperationSignExtend32From8.
 	compileSignExtend32From8() error
-	// compileSignExtend32From16 adds instruction to sign-extends the first 16-bits of 32-bit in as signed 32-bit int.
-	// See wasm.OpcodeI32Extend16S
+	// compileSignExtend32From16 adds instructions to perform wazeroir.OperationSignExtend32From16.
 	compileSignExtend32From16() error
-	// compileSignExtend64From8 adds instruction to sign-extends the first 8-bits of 64-bit in as signed 64-bit int.
-	// See wasm.OpcodeI64Extend8S
+	// compileSignExtend64From8 adds instructions to perform wazeroir.OperationSignExtend64From8.
 	compileSignExtend64From8() error
-	// compileSignExtend64From16 adds instruction to sign-extends the first 16-bits of 64-bit in as signed 64-bit int.
-	// See wasm.OpcodeI64Extend16S
+	// compileSignExtend64From16 adds instructions to perform wazeroir.OperationSignExtend64From16.
 	compileSignExtend64From16() error
-	// compileSignExtend64From32 adds instruction to sign-extends the first 32-bits of 64-bit in as signed 64-bit int.
-	// See wasm.OpcodeI64Extend32S
+	// compileSignExtend64From32 adds instructions to perform wazeroir.OperationSignExtend64From32.
 	compileSignExtend64From32() error
 	// compileMemoryInit adds instructions to perform operations corresponding to the wasm.OpcodeMemoryInitName instruction in
 	// wasm.FeatureBulkMemoryOperations.

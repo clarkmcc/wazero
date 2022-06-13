@@ -1457,7 +1457,7 @@ operatorSwitch:
 		c.emit(
 			&OperationITruncFromF{InputType: Float64, OutputType: SignedUint64},
 		)
-	case wasm.OpcodeF32ConvertI32s:
+	case wasm.OpcodeF32ConvertI32S:
 		c.emit(
 			&OperationFConvertFromI{InputType: SignedInt32, OutputType: Float32},
 		)

@@ -218,7 +218,7 @@ const (
 	OpcodeI64TruncF64S  Opcode = 0xb0
 	OpcodeI64TruncF64U  Opcode = 0xb1
 
-	OpcodeF32ConvertI32s Opcode = 0xb2
+	OpcodeF32ConvertI32S Opcode = 0xb2
 	OpcodeF32ConvertI32U Opcode = 0xb3
 	OpcodeF32ConvertI64S Opcode = 0xb4
 	OpcodeF32ConvertI64U Opcode = 0xb5
@@ -783,7 +783,7 @@ const (
 	OpcodeI64TruncF32UName      = "i64.trunc_f32_u"
 	OpcodeI64TruncF64SName      = "i64.trunc_f64_s"
 	OpcodeI64TruncF64UName      = "i64.trunc_f64_u"
-	OpcodeF32ConvertI32sName    = "f32.convert_i32_s"
+	OpcodeF32ConvertI32SName    = "f32.convert_i32_s"
 	OpcodeF32ConvertI32UName    = "f32.convert_i32_u"
 	OpcodeF32ConvertI64SName    = "f32.convert_i64_s"
 	OpcodeF32ConvertI64UName    = "f32.convert_i64u"
@@ -977,7 +977,7 @@ var instructionNames = [256]string{
 	OpcodeI64TruncF32U:      OpcodeI64TruncF32UName,
 	OpcodeI64TruncF64S:      OpcodeI64TruncF64SName,
 	OpcodeI64TruncF64U:      OpcodeI64TruncF64UName,
-	OpcodeF32ConvertI32s:    OpcodeF32ConvertI32sName,
+	OpcodeF32ConvertI32S:    OpcodeF32ConvertI32SName,
 	OpcodeF32ConvertI32U:    OpcodeF32ConvertI32UName,
 	OpcodeF32ConvertI64S:    OpcodeF32ConvertI64SName,
 	OpcodeF32ConvertI64U:    OpcodeF32ConvertI64UName,

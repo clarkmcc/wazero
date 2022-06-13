@@ -714,7 +714,7 @@ func (m *Module) validateFunctionWithMaxStackValues(
 					return fmt.Errorf("cannot pop the f64 operand for %s: %v", InstructionName(op), err)
 				}
 				valueTypeStack.push(ValueTypeI64)
-			case OpcodeF32ConvertI32s, OpcodeF32ConvertI32U:
+			case OpcodeF32ConvertI32S, OpcodeF32ConvertI32U:
 				if err := valueTypeStack.popAndVerifyType(ValueTypeI32); err != nil {
 					return fmt.Errorf("cannot pop the i32 operand for %s: %v", InstructionName(op), err)
 				}
