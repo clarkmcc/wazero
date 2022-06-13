@@ -2612,7 +2612,7 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 				return err
 			}
 
-			// TODO: add comments about the following logic
+			// See https://github.com/bytecodealliance/wasmtime/pull/2440
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
 			c.assembler.CompileRegisterToRegister(amd64.MAXPS, tmp, vr)
 			c.assembler.CompileRegisterToRegister(amd64.PCMPEQD, tmp, tmp)
