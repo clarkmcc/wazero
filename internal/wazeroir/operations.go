@@ -1196,6 +1196,8 @@ func (OperationConstF64) Kind() OperationKind {
 }
 
 // OperationEq implements Operation.
+//
+// This corresponds to wasm.OpcodeI32EqName wasm.OpcodeI64EqName wasm.OpcodeF32EqName wasm.OpcodeF64EqName
 type OperationEq struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1204,6 +1206,8 @@ func (OperationEq) Kind() OperationKind {
 }
 
 // OperationNe implements Operation.
+//
+// This corresponds to wasm.OpcodeI32NeName wasm.OpcodeI64NeName wasm.OpcodeF32NeName wasm.OpcodeF64NeName
 type OperationNe struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1212,6 +1216,8 @@ func (OperationNe) Kind() OperationKind {
 }
 
 // OperationEqz implements Operation.
+//
+// This corresponds to wasm.OpcodeI32EqzName wasm.OpcodeI64EqzName
 type OperationEqz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1220,6 +1226,8 @@ func (OperationEqz) Kind() OperationKind {
 }
 
 // OperationLt implements Operation.
+//
+// This corresponds to wasm.OpcodeI32LtS wasm.OpcodeI32LtU wasm.OpcodeI64LtS wasm.OpcodeI64LtU wasm.OpcodeF32Lt wasm.OpcodeF64Lt
 type OperationLt struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1228,6 +1236,8 @@ func (OperationLt) Kind() OperationKind {
 }
 
 // OperationGt implements Operation.
+//
+// This corresponds to wasm.OpcodeI32GtS wasm.OpcodeI32GtU wasm.OpcodeI64GtS wasm.OpcodeI64GtU wasm.OpcodeF32Gt wasm.OpcodeF64Gt
 type OperationGt struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1236,6 +1246,8 @@ func (OperationGt) Kind() OperationKind {
 }
 
 // OperationLe implements Operation.
+//
+// This corresponds to wasm.OpcodeI32LeS wasm.OpcodeI32LeU wasm.OpcodeI64LeS wasm.OpcodeI64LeU wasm.OpcodeF32Le wasm.OpcodeF64Le
 type OperationLe struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1244,6 +1256,8 @@ func (OperationLe) Kind() OperationKind {
 }
 
 // OperationGe implements Operation.
+//
+// This corresponds to wasm.OpcodeI32GeS wasm.OpcodeI32GeU wasm.OpcodeI64GeS wasm.OpcodeI64GeU wasm.OpcodeF32Ge wasm.OpcodeF64Ge
 type OperationGe struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1252,6 +1266,8 @@ func (OperationGe) Kind() OperationKind {
 }
 
 // OperationAdd implements Operation.
+//
+// This corresponds to wasm.OpcodeI32AddName wasm.OpcodeI64AddName wasm.OpcodeF32AddName wasm.OpcodeF64AddName.
 type OperationAdd struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1260,6 +1276,8 @@ func (OperationAdd) Kind() OperationKind {
 }
 
 // OperationSub implements Operation.
+//
+// This corresponds to wasm.OpcodeI32SubName wasm.OpcodeI64SubName wasm.OpcodeF32SubName wasm.OpcodeF64SubName.
 type OperationSub struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1268,6 +1286,8 @@ func (OperationSub) Kind() OperationKind {
 }
 
 // OperationMul implements Operation.
+//
+// This corresponds to wasm.OpcodeI32MulName wasm.OpcodeI64MulName wasm.OpcodeF32MulName wasm.OpcodeF64MulName.
 type OperationMul struct{ Type UnsignedType }
 
 // Kind implements Operation.Kind.
@@ -1276,6 +1296,13 @@ func (OperationMul) Kind() OperationKind {
 }
 
 // OperationClz implements Operation.
+//
+// This corresponds to wasm.OpcodeI32ClzName wasm.OpcodeI64ClzName.
+//
+// The engines are expected to count up the leading zeros in the
+// current top of the stack, and push the count result.
+// For example, stack of [..., 0x00_ff_ff_ff] results in [..., 8].
+// See wasm.OpcodeI32Clz wasm.OpcodeI64Clz
 type OperationClz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1284,6 +1311,12 @@ func (OperationClz) Kind() OperationKind {
 }
 
 // OperationCtz implements Operation.
+//
+// This corresponds to wasm.OpcodeI32CtzName wasm.OpcodeI64CtzName.
+//
+// The engines are expected to count up the trailing zeros in the
+// current top of the stack, and push the count result.
+// For example, stack of [..., 0xff_ff_ff_00] results in [..., 8].
 type OperationCtz struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1292,6 +1325,12 @@ func (OperationCtz) Kind() OperationKind {
 }
 
 // OperationPopcnt implements Operation.
+//
+// This corresponds to wasm.OpcodeI32PopcntName wasm.OpcodeI64PopcntName.
+//
+// The engines are expected to count up the number of set bits in the
+// current top of the stack, and push the count result.
+// For example, stack of [..., 0b00_00_00_11] results in [..., 2].
 type OperationPopcnt struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1300,6 +1339,9 @@ func (OperationPopcnt) Kind() OperationKind {
 }
 
 // OperationDiv implements Operation.
+//
+// This corresponds to wasm.OpcodeI32DivS wasm.OpcodeI32DivU wasm.OpcodeI64DivS
+//	wasm.OpcodeI64DivU wasm.OpcodeF32Div wasm.OpcodeF64Div.
 type OperationDiv struct{ Type SignedType }
 
 // Kind implements Operation.Kind.
@@ -1308,6 +1350,13 @@ func (OperationDiv) Kind() OperationKind {
 }
 
 // OperationRem implements Operation.
+//
+// This corresponds to wasm.OpcodeI32RemS wasm.OpcodeI32RemU wasm.OpcodeI64RemS wasm.OpcodeI64RemU.
+//
+// The engines are expected to perform division on the top
+// two values of integer type on the stack and puts the remainder of the result
+// onto the stack. For example, stack [..., 10, 3] results in [..., 1] where
+// the quotient is discarded.
 type OperationRem struct{ Type SignedInt }
 
 // Kind implements Operation.Kind.
@@ -1316,6 +1365,11 @@ func (OperationRem) Kind() OperationKind {
 }
 
 // OperationAnd implements Operation.
+//
+// This corresponds to wasm.OpcodeI32AndName wasm.OpcodeI64AndName
+//
+// The engines are expected to perform "And" operation on
+// top two values on the stack, and pushes the result.
 type OperationAnd struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1324,6 +1378,11 @@ func (OperationAnd) Kind() OperationKind {
 }
 
 // OperationOr implements Operation.
+//
+// This corresponds to wasm.OpcodeI32OrName wasm.OpcodeI64OrName
+//
+// The engines are expected to perform "Or" operation on
+// top two values on the stack, and pushes the result.
 type OperationOr struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1332,6 +1391,11 @@ func (OperationOr) Kind() OperationKind {
 }
 
 // OperationXor implements Operation.
+//
+// This corresponds to wasm.OpcodeI32XorName wasm.OpcodeI64XorName
+//
+// The engines are expected to perform "Xor" operation on
+// top two values on the stack, and pushes the result.
 type OperationXor struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1340,6 +1404,11 @@ func (OperationXor) Kind() OperationKind {
 }
 
 // OperationShl implements Operation.
+//
+// This corresponds to wasm.OpcodeI32ShlName wasm.OpcodeI64ShlName
+//
+// The engines are expected to perform "Shl" operation on
+// top two values on the stack, and pushes the result.
 type OperationShl struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1348,6 +1417,11 @@ func (OperationShl) Kind() OperationKind {
 }
 
 // OperationShr implements Operation.
+//
+// This corresponds to wasm.OpcodeI32ShrSName wasm.OpcodeI32ShrUName wasm.OpcodeI64ShrSName wasm.OpcodeI64ShrUName
+//
+// If OperationShr.Type is signed integer, then, the engines are expected to perform arithmetic right shift on the two
+// top values on the stack, otherwise do the logical right shift.
 type OperationShr struct{ Type SignedInt }
 
 // Kind implements Operation.Kind.
@@ -1356,6 +1430,11 @@ func (OperationShr) Kind() OperationKind {
 }
 
 // OperationRotl implements Operation.
+//
+// This corresponds to wasm.OpcodeI32RotlName wasm.OpcodeI64RotlName
+//
+// The engines are expected to perform "Rotl" operation on
+// top two values on the stack, and pushes the result.
 type OperationRotl struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1364,6 +1443,11 @@ func (OperationRotl) Kind() OperationKind {
 }
 
 // OperationRotr implements Operation.
+//
+// This corresponds to wasm.OpcodeI32RotrName wasm.OpcodeI64RotrName
+//
+// The engines are expected to perform "Rotr" operation on
+// top two values on the stack, and pushes the result.
 type OperationRotr struct{ Type UnsignedInt }
 
 // Kind implements Operation.Kind.
@@ -1372,6 +1456,8 @@ func (OperationRotr) Kind() OperationKind {
 }
 
 // OperationAbs implements Operation.
+//
+// This corresponds to wasm.OpcodeF32Abs wasm.OpcodeF64Abs
 type OperationAbs struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1380,6 +1466,8 @@ func (OperationAbs) Kind() OperationKind {
 }
 
 // OperationNeg implements Operation.
+//
+// This corresponds to wasm.OpcodeF32Neg wasm.OpcodeF64Neg
 type OperationNeg struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1388,6 +1476,8 @@ func (OperationNeg) Kind() OperationKind {
 }
 
 // OperationCeil implements Operation.
+//
+// This corresponds to wasm.OpcodeF32CeilName wasm.OpcodeF64CeilName
 type OperationCeil struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1396,6 +1486,8 @@ func (OperationCeil) Kind() OperationKind {
 }
 
 // OperationFloor implements Operation.
+//
+// This corresponds to wasm.OpcodeF32FloorName wasm.OpcodeF64FloorName
 type OperationFloor struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1404,6 +1496,8 @@ func (OperationFloor) Kind() OperationKind {
 }
 
 // OperationTrunc implements Operation.
+//
+// This corresponds to wasm.OpcodeF32TruncName wasm.OpcodeF64TruncName
 type OperationTrunc struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1412,6 +1506,12 @@ func (OperationTrunc) Kind() OperationKind {
 }
 
 // OperationNearest implements Operation.
+//
+// This corresponds to wasm.OpcodeF32NearestName wasm.OpcodeF64NearestName
+//
+// Note: this is *not* equivalent to math.Round and instead has the same
+// the semantics of LLVM's rint intrinsic. See https://llvm.org/docs/LangRef.html#llvm-rint-intrinsic.
+// For example, math.Round(-4.5) produces -5 while we want to produce -4.
 type OperationNearest struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1420,6 +1520,8 @@ func (OperationNearest) Kind() OperationKind {
 }
 
 // OperationSqrt implements Operation.
+//
+// This corresponds to wasm.OpcodeF32SqrtName wasm.OpcodeF64SqrtName
 type OperationSqrt struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1428,6 +1530,14 @@ func (OperationSqrt) Kind() OperationKind {
 }
 
 // OperationMin implements Operation.
+//
+// This corresponds to wasm.OpcodeF32MinName wasm.OpcodeF64MinName
+//
+// The engines are expected to pop two values from the stack, and push back the maximum of
+// these two values onto the stack. For example, stack [..., 100.1, 1.9] results in [..., 1.9].
+//
+// Note: WebAssembly specifies that min/max must always return NaN if one of values is NaN,
+// which is a different behavior different from math.Min.
 type OperationMin struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1436,6 +1546,14 @@ func (OperationMin) Kind() OperationKind {
 }
 
 // OperationMax implements Operation.
+//
+// This corresponds to wasm.OpcodeF32MaxName wasm.OpcodeF64MaxName
+//
+// The engines are expected to pop two values from the stack, and push back the maximum of
+// these two values onto the stack. For example, stack [..., 100.1, 1.9] results in [..., 100.1].
+//
+// Note: WebAssembly specifies that min/max must always return NaN if one of values is NaN,
+// which is a different behavior different from math.Max.
 type OperationMax struct{ Type Float }
 
 // Kind implements Operation.Kind.
@@ -1444,6 +1562,12 @@ func (OperationMax) Kind() OperationKind {
 }
 
 // OperationCopysign implements Operation.
+//
+// This corresponds to wasm.OpcodeF32CopysignName wasm.OpcodeF64CopysignName
+//
+// The engines are expected to pop two float values from the stack, and copy the signbit of
+// the first-popped value to the last one.
+// For example, stack [..., 1.213, -5.0] results in [..., -1.213].
 type OperationCopysign struct{ Type Float }
 
 // Kind implements Operation.Kind.

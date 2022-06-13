@@ -16,7 +16,7 @@ type compiler interface {
 	// stackPointerCeil is the max stack pointer that the target function would reach.
 	// staticData is codeStaticData for the resulting native code.
 	compile() (code []byte, staticData codeStaticData, stackPointerCeil uint64, err error)
-	// compileHostFunction emits the trampoline code from which native code can jump into the host function.
+	// compileHostFunction adds the trampoline code from which native code can jump into the host function.
 	// TODO: maybe we wouldn't need to have trampoline for host functions.
 	compileHostFunction() error
 	// compileLabel notify compilers of the beginning of a label.
@@ -50,116 +50,55 @@ type compiler interface {
 	compileSelect() error
 	// compilePick adds instructions to perform wazeroir.OperationPick.
 	compilePick(o *wazeroir.OperationPick) error
-	// compileAdd adds instructions to pop two values from the stack, add these two values, and push
-	// back the result onto the stack.
-	// See wasm.OpcodeI32Add wasm.OpcodeI64Add wasm.OpcodeF32Add wasm.OpcodeF64Add
+	// compileAdd adds instructions to perform wazeroir.OperationAdd.
 	compileAdd(o *wazeroir.OperationAdd) error
-	// compileSub adds instructions to pop two values from the stack, subtract the top from the second one, and push
-	// back the result onto the stack.
-	// See wasm.OpcodeI32Sub wasm.OpcodeI64Sub wasm.OpcodeF32Sub wasm.OpcodeF64Sub
+	// compileSub adds instructions to perform wazeroir.OperationSub.
 	compileSub(o *wazeroir.OperationSub) error
-	// compileMul adds instructions to pop two values from the stack, multiply these two values, and push
-	// back the result onto the stack.
-	// See wasm.OpcodeI32Mul wasm.OpcodeI64Mul wasm.OpcodeF32Mul wasm.OpcodeF64Mul
+	// compileMul adds instructions to perform wazeroir.OperationMul.
 	compileMul(o *wazeroir.OperationMul) error
-	// compileClz emits instructions to count up the leading zeros in the
-	// current top of the stack, and push the count result.
-	// For example, stack of [..., 0x00_ff_ff_ff] results in [..., 8].
-	// See wasm.OpcodeI32Clz wasm.OpcodeI64Clz
+	// compileClz adds instructions to perform wazeroir.OperationClz.
 	compileClz(o *wazeroir.OperationClz) error
-	// compileCtz emits instructions to count up the trailing zeros in the
-	// current top of the stack, and push the count result.
-	// For example, stack of [..., 0xff_ff_ff_00] results in [..., 8].
-	// See wasm.OpcodeI32Ctz wasm.OpcodeI64Ctz
+	// compileCtz adds instructions to perform wazeroir.OperationCtz.
 	compileCtz(o *wazeroir.OperationCtz) error
-	// compilePopcnt emits instructions to count up the number of set bits in the
-	// current top of the stack, and push the count result.
-	// For example, stack of [..., 0b00_00_00_11] results in [..., 2].
-	// See wasm.OpcodeI32Popcnt wasm.OpcodeI64Popcnt
+	// compilePopcnt adds instructions to perform wazeroir.OperationPopcnt.
 	compilePopcnt(o *wazeroir.OperationPopcnt) error
-	// compileDiv emits the instructions to perform division on the top two values on the stack.
-	// See wasm.OpcodeI32DivS wasm.OpcodeI32DivU wasm.OpcodeI64DivS wasm.OpcodeI64DivU wasm.OpcodeF32Div wasm.OpcodeF64Div
+	// compileDiv adds instructions to perform wazeroir.OperationDiv.
 	compileDiv(o *wazeroir.OperationDiv) error
-	// compileRem emits the instructions to perform division on the top
-	// two values of integer type on the stack and puts the remainder of the result
-	// onto the stack. For example, stack [..., 10, 3] results in [..., 1] where
-	// the quotient is discarded.
-	// See wasm.OpcodeI32RemS wasm.OpcodeI32RemU wasm.OpcodeI64RemS wasm.OpcodeI64RemU
+	// compileRem adds instructions to perform wazeroir.OperationRem.
 	compileRem(o *wazeroir.OperationRem) error
-	// compileAnd emits instructions to perform logical "and" operation on
-	// top two values on the stack, and push the result.
-	// See wasm.OpcodeI32And wasm.OpcodeI64And
+	// compileAnd adds instructions to perform wazeroir.OperationAnd.
 	compileAnd(o *wazeroir.OperationAnd) error
-	// compileOr emits instructions to perform logical "or" operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Or wasm.OpcodeI64Or
+	// compileOr adds instructions to perform wazeroir.OperationOr.
 	compileOr(o *wazeroir.OperationOr) error
-	// compileXor emits instructions to perform logical "xor" operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Xor wasm.OpcodeI64Xor
+	// compileXor adds instructions to perform wazeroir.OperationXor.
 	compileXor(o *wazeroir.OperationXor) error
-	// compileShl emits instructions to perform a shift-left operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Shl wasm.OpcodeI64Shl
+	// compileShl adds instructions to perform wazeroir.OperationShl.
 	compileShl(o *wazeroir.OperationShl) error
-	// compileShr emits instructions to perform a shift-right operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Shr wasm.OpcodeI64Shr
+	// compileShr adds instructions to perform wazeroir.OperationShr.
 	compileShr(o *wazeroir.OperationShr) error
-	// compileRotl emits instructions to perform a rotate-left operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Rotl wasm.OpcodeI64Rotl
+	// compileRotl adds instructions to perform wazeroir.OperationRotl.
 	compileRotl(o *wazeroir.OperationRotl) error
-	// compileRotr emits instructions to perform a rotate-right operation on
-	// top two values on the stack, and pushes the result.
-	// See wasm.OpcodeI32Rotr wasm.OpcodeI64Rotr
+	// compileRotr adds instructions to perform wazeroir.OperationRotr.
 	compileRotr(o *wazeroir.OperationRotr) error
-	// compileAbs adds instructions to replace the top value of float type on the stack with its absolute value.
-	// For example, stack [..., -1.123] results in [..., 1.123].
-	// See wasm.OpcodeF32Abs wasm.OpcodeF64Abs
+	// compileNeg adds instructions to perform wazeroir.OperationAbs.
 	compileAbs(o *wazeroir.OperationAbs) error
-	// compileNeg adds instructions to replace the top value of float type on the stack with its negated value.
-	// For example, stack [..., -1.123] results in [..., 1.123].
-	// See wasm.OpcodeF32Neg wasm.OpcodeF64Neg
+	// compileNeg adds instructions to perform wazeroir.OperationNeg.
 	compileNeg(o *wazeroir.OperationNeg) error
-	// compileCeil adds instructions to replace the top value of float type on the stack with its ceiling value.
-	// For example, stack [..., 1.123] results in [..., 2.0]. This is equivalent to math.Ceil.
-	// See wasm.OpcodeF32Ceil wasm.OpcodeF64Ceil
+	// compileCeil adds instructions to perform wazeroir.OperationCeil.
 	compileCeil(o *wazeroir.OperationCeil) error
-	// compileFloor adds instructions to replace the top value of float type on the stack with its floor value.
-	// For example, stack [..., 1.123] results in [..., 1.0]. This is equivalent to math.Floor.
-	// See wasm.OpcodeF32Floor wasm.OpcodeF64Floor
+	// compileFloor adds instructions to perform wazeroir.OperationFloor.
 	compileFloor(o *wazeroir.OperationFloor) error
-	// compileTrunc adds instructions to replace the top value of float type on the stack with its truncated value.
-	// For example, stack [..., 1.9] results in [..., 1.0]. This is equivalent to math.Trunc.
-	// See wasm.OpcodeF32Trunc wasm.OpcodeF64Trunc
+	// compileTrunc adds instructions to perform wazeroir.OperationTrunc.
 	compileTrunc(o *wazeroir.OperationTrunc) error
-	// compileNearest adds instructions to replace the top value of float type on the stack with its nearest integer value.
-	// For example, stack [..., 1.9] results in [..., 2.0]. This is *not* equivalent to math.Round and instead has the same
-	// the semantics of LLVM's rint intrinsic. See https://llvm.org/docs/LangRef.html#llvm-rint-intrinsic.
-	// For example, math.Round(-4.5) produces -5 while we want to produce -4.
-	// See wasm.OpcodeF32Nearest wasm.OpcodeF64Nearest
+	// compileNearest adds instructions to perform wazeroir.OperationNearest.
 	compileNearest(o *wazeroir.OperationNearest) error
-	// compileSqrt adds instructions to replace the top value of float type on the stack with its square root.
-	// For example, stack [..., 9.0] results in [..., 3.0]. This is equivalent to "math.Sqrt".
-	// See wasm.OpcodeF32Sqrt wasm.OpcodeF64Sqrt
+	// compileSqrt adds instructions perform wazeroir.OperationSqrt.
 	compileSqrt(o *wazeroir.OperationSqrt) error
-	// compileMin adds instructions to pop two values from the stack, and push back the maximum of
-	// these two values onto the stack. For example, stack [..., 100.1, 1.9] results in [..., 1.9].
-	// Note: WebAssembly specifies that min/max must always return NaN if one of values is NaN,
-	// which is a different behavior different from math.Min.
-	// See wasm.OpcodeF32Min wasm.OpcodeF64Min
+	// compileMin adds instructions perform wazeroir.OperationMin.
 	compileMin(o *wazeroir.OperationMin) error
-	// compileMax adds instructions to pop two values from the stack, and push back the maximum of
-	// these two values onto the stack. For example, stack [..., 100.1, 1.9] results in [..., 100.1].
-	// Note: WebAssembly specifies that min/max must always return NaN if one of values is NaN,
-	// which is a different behavior different from math.Max.
-	// See wasm.OpcodeF32Max wasm.OpcodeF64Max
+	// compileMax adds instructions perform wazeroir.OperationMax.
 	compileMax(o *wazeroir.OperationMax) error
-	// compileCopysign adds instructions to pop two float values from the stack, and copy the signbit of
-	// the first-popped value to the last one.
-	// For example, stack [..., 1.213, -5.0] results in [..., -1.213].
-	// See wasm.OpcodeF32Copysign wasm.OpcodeF64Copysign
+	// compileCopysign adds instructions to perform wazeroir.OperationCopysign.
 	compileCopysign(o *wazeroir.OperationCopysign) error
 	// compileI32WrapFromI64 adds instructions to replace the 64-bit int on top of the stack
 	// with the corresponding 32-bit integer. This is equivalent to uint64(uint32(v)) in Go.
@@ -213,26 +152,19 @@ type compiler interface {
 	// original integer's sign.
 	// See wasm.OpcodeI64ExtendI32S wasm.OpcodeI64ExtendI32U
 	compileExtend(o *wazeroir.OperationExtend) error
-	// compileEq adds instructions to pop two values from the stack and push 1 if they equal otherwise 0.
-	// See wasm.OpcodeI32Eq wasm.OpcodeI64Eq
+	// compileEq adds instructions to perform wazeroir.OperationEq.
 	compileEq(o *wazeroir.OperationEq) error
-	// compileEq adds instructions to pop two values from the stack and push 0 if they equal otherwise 1.
-	// See wasm.OpcodeI32Ne wasm.OpcodeI64Ne
+	// compileEq adds instructions to perform wazeroir.OperationNe.
 	compileNe(o *wazeroir.OperationNe) error
-	// compileEq adds instructions to pop a value from the stack and push 1 if it equals zero, 0.
-	// See wasm.OpcodeI32Eqz wasm.OpcodeI64Eqz
+	// compileEq adds instructions to perform wazeroir.OperationEqz.
 	compileEqz(o *wazeroir.OperationEqz) error
-	// compileLt adds instructions to pop two values from the stack and push 1 if the second is less than the top one. Otherwise 0.
-	// See wasm.OpcodeI32Lt wasm.OpcodeI64Lt
+	// compileLt adds instructions to perform wazeroir.OperationLt.
 	compileLt(o *wazeroir.OperationLt) error
-	// compileGt adds instructions to pop two values from the stack and push 1 if the second is greater than the top one. Otherwise 0.
-	// See wasm.OpcodeI32Gt wasm.OpcodeI64Gt
+	// compileGt adds instructions to perform wazeroir.OperationGt.
 	compileGt(o *wazeroir.OperationGt) error
-	// compileLe adds instructions to pop two values from the stack and push 1 if the second is less than or equals the top one. Otherwise 0.
-	// See wasm.OpcodeI32Le wasm.OpcodeI64Le
+	// compileLe adds instructions to perform wazeroir.OperationLe.
 	compileLe(o *wazeroir.OperationLe) error
-	// compileLe adds instructions to pop two values from the stack and push 1 if the second is greater than or equals the top one. Otherwise 0.
-	// See wasm.OpcodeI32Ge wasm.OpcodeI64Ge
+	// compileLe adds instructions to perform wazeroir.OperationGe.
 	compileGe(o *wazeroir.OperationGe) error
 	// compileLoad adds instructions to perform wazeroir.OperationLoad.
 	compileLoad(o *wazeroir.OperationLoad) error
