@@ -1428,7 +1428,7 @@ func (ce *callEngine) callNativeFunc(ctx context.Context, callCtx *wasm.CallCont
 			} else {
 				// Float64
 				const mask uint64 = 1 << 63
-				ce.pushValue(uint64(ce.popValue() &^ mask))
+				ce.pushValue(ce.popValue() &^ mask)
 			}
 			frame.pc++
 		case wazeroir.OperationKindNeg:

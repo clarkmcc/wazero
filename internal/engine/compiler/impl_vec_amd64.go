@@ -2255,8 +2255,7 @@ func (c *amd64Compiler) compileV128Q15mulrSatS(*wazeroir.OperationV128Q15mulrSat
 
 	x1r, x2r := x1.register, x2.register
 
-	// TODO: add comments about the logic below.
-
+	// See https://github.com/WebAssembly/simd/pull/365 for the following logic.
 	if err := c.assembler.CompileLoadStaticConstToRegister(amd64.MOVDQU, q15mulrSatSMask[:], tmp); err != nil {
 		return err
 	}
@@ -2528,8 +2527,10 @@ func (c *amd64Compiler) compileV128Narrow(o *wazeroir.OperationV128Narrow) error
 }
 
 var (
+	// i32x4sTruncSatF64x4Mask equals [2147483647.0, 2147483647.0] as f64x2 lanes.
 	i32x4sTruncSatF64x4Mask = [16]byte{
-		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41, 0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
+		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
+		0x00, 0x00, 0xc0, 0xff, 0xff, 0xff, 0xdf, 0x41,
 	}
 
 	i32x4uTruncSatF64x4Mask = [16 * 2]byte{
@@ -2622,14 +2623,26 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 		}
 
 		if o.Signed {
-			// TODO: add comments about the following logic
+			// Copy the value into tmp.
 			c.assembler.CompileRegisterToRegister(amd64.MOVDQA, vr, tmp)
+
+			// Set all bits for non-NaN lanes, zeros otherwise.
+			// I.e. tmp[i] = 0xffffffff_ffffffff if vi != NaN, 0 otherwise.
 			c.assembler.CompileRegisterToRegister(amd64.CMPEQPD, tmp, tmp)
+
+			// Load the 2147483647 into tmp2's each lane.
 			if err = c.assembler.CompileLoadStaticConstToRegister(amd64.MOVUPD, i32x4sTruncSatF64x4Mask[:], tmp2); err != nil {
 				return err
 			}
+
+			// tmp[i] = 2147483647 if vi != NaN, 0 otherwise.
 			c.assembler.CompileRegisterToRegister(amd64.ANDPS, tmp2, tmp)
+
+			// MINPD returns the source register's value as-is, so we have
+			//  vr[i] = vi   if vi != NaN
+			//        = 0    if vi == NaN
 			c.assembler.CompileRegisterToRegister(amd64.MINPD, tmp, vr)
+
 			c.assembler.CompileRegisterToRegister(amd64.CVTTPD2DQ, vr, vr)
 		} else {
 			// TODO: add comments about the following logic
