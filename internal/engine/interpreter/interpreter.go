@@ -430,12 +430,10 @@ func (e *engine) lowerIR(ir *wazeroir.CompilationResult) (*code, error) {
 			op.us[0] = uint64(o.Arg.Alignment)
 			op.us[1] = uint64(o.Arg.Offset)
 		case *wazeroir.OperationStore8:
-			op.b1 = byte(o.Type)
 			op.us = make([]uint64, 2)
 			op.us[0] = uint64(o.Arg.Alignment)
 			op.us[1] = uint64(o.Arg.Offset)
 		case *wazeroir.OperationStore16:
-			op.b1 = byte(o.Type)
 			op.us = make([]uint64, 2)
 			op.us[0] = uint64(o.Arg.Alignment)
 			op.us[1] = uint64(o.Arg.Offset)

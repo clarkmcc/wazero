@@ -947,7 +947,7 @@ operatorSwitch:
 			return err
 		}
 		c.emit(
-			&OperationStore8{Type: UnsignedInt32, Arg: imm},
+			&OperationStore8{Arg: imm},
 		)
 	case wasm.OpcodeI32Store16:
 		imm, err := c.readMemoryArg(wasm.OpcodeI32Store16Name)
@@ -955,7 +955,7 @@ operatorSwitch:
 			return err
 		}
 		c.emit(
-			&OperationStore16{Type: UnsignedInt32, Arg: imm},
+			&OperationStore16{Arg: imm},
 		)
 	case wasm.OpcodeI64Store8:
 		imm, err := c.readMemoryArg(wasm.OpcodeI64Store8Name)
@@ -963,7 +963,7 @@ operatorSwitch:
 			return err
 		}
 		c.emit(
-			&OperationStore8{Type: UnsignedInt64, Arg: imm},
+			&OperationStore8{Arg: imm},
 		)
 	case wasm.OpcodeI64Store16:
 		imm, err := c.readMemoryArg(wasm.OpcodeI64Store16Name)
@@ -971,7 +971,7 @@ operatorSwitch:
 			return err
 		}
 		c.emit(
-			&OperationStore16{Type: UnsignedInt64, Arg: imm},
+			&OperationStore16{Arg: imm},
 		)
 	case wasm.OpcodeI64Store32:
 		imm, err := c.readMemoryArg(wasm.OpcodeI64Store32Name)
