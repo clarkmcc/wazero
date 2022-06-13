@@ -234,60 +234,33 @@ type compiler interface {
 	// compileLe adds instructions to pop two values from the stack and push 1 if the second is greater than or equals the top one. Otherwise 0.
 	// See wasm.OpcodeI32Ge wasm.OpcodeI64Ge
 	compileGe(o *wazeroir.OperationGe) error
-	// compileLoad adds instructions to perform load instruction in WebAssembly.
-	// See wasm.OpcodeI32Load wasm.OpcodeI64Load wasm.OpcodeF32Load wasm.OpcodeF64Load
+	// compileLoad adds instructions to perform wazeroir.OperationLoad.
 	compileLoad(o *wazeroir.OperationLoad) error
-	// compileLoad8 adds instructions to perform load8 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds if out-of-bounds access happens.
-	// See wasm.OpcodeI32Load8S wasm.OpcodeI32Load8U wasm.OpcodeI64Load8S wasm.OpcodeI64Load8U
+	// compileLoad8 adds instructions to perform wazeroir.OperationLoad8.
 	compileLoad8(o *wazeroir.OperationLoad8) error
-	// compileLoad16 adds instructions to perform load16 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds if out-of-bounds access happens.
-	// See wasm.OpcodeI32Load16S wasm.OpcodeI32Load16U wasm.OpcodeI64Load16S wasm.OpcodeI64Load16U
+	// compileLoad16 adds instructions to perform wazeroir.OperationLoad16.
 	compileLoad16(o *wazeroir.OperationLoad16) error
-	// compileLoad32 adds instructions to perform load32 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds
-	// if out-of-bounds access happens.
-	// See wasm.OpcodeI64Load32S wasm.OpcodeI64Load32U
+	// compileLoad32 adds instructions to perform wazeroir.OperationLoad32.
 	compileLoad32(o *wazeroir.OperationLoad32) error
-	// compileStore adds instructions to perform store instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds
-	// if out-of-bounds access happens.
-	// See wasm.OpcodeI32Store wasm.OpcodeI64Store wasm.OpcodeF32Store wasm.OpcodeF64Store
+	// compileStore adds instructions to perform wazeroir.OperationStore.
 	compileStore(o *wazeroir.OperationStore) error
-	// compileStore8 adds instructions to perform store8 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds
-	// if out-of-bounds access happens.
-	// See wasm.OpcodeI32Store8S wasm.OpcodeI32Store8U wasm.OpcodeI64Store8S wasm.OpcodeI64Store8U
+	// compileStore8 adds instructions to perform wazeroir.OperationStore8.
 	compileStore8(o *wazeroir.OperationStore8) error
-	// compileStore16 adds instructions to perform store16 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds
-	// if out-of-bounds access happens.
-	// See wasm.OpcodeI32Store16S wasm.OpcodeI32Store16U wasm.OpcodeI64Store16S wasm.OpcodeI64Store16U
+	// compileStore16 adds instructions to perform wazeroir.OperationStore16.
 	compileStore16(o *wazeroir.OperationStore16) error
-	// compileStore32 adds instructions to perform store32 instruction in WebAssembly.
-	// The resulting code checks the memory boundary at runtime, and exit the function with nativeCallStatusCodeMemoryOutOfBounds
-	// if out-of-bounds access happens.
-	// See wasm.OpcodeI64Store32S wasm.OpcodeI64Store32U
+	// compileStore32 adds instructions to perform wazeroir.OperationStore32.
 	compileStore32(o *wazeroir.OperationStore32) error
-	// compileMemorySize adds instruction to pop a value from the stack, grow the memory buffer according to the value,
-	// and push the previous page size onto the stack.
-	// See wasm.OpcodeMemoryGrow
+	// compileMemorySize adds instruction to perform wazeroir.OperationMemoryGrow.
 	compileMemoryGrow() error
-	// compileMemorySize adds instruction to read the current page size of memory instance and push it onto the stack.
-	// See wasm.OpcodeMemorySize
+	// compileMemorySize adds instruction to perform wazeroir.OperationMemorySize.
 	compileMemorySize() error
-	// compileConstI32 adds instruction to push the given constant i32 value onto the stack.
-	// See wasm.OpcodeI32Const
+	// compileConstI32 adds instruction to perform wazeroir.OperationConstI32.
 	compileConstI32(o *wazeroir.OperationConstI32) error
-	// compileConstI32 adds instruction to push the given constant i64 value onto the stack.
-	// See wasm.OpcodeI64Const
+	// compileConstI64 adds instruction to perform wazeroir.OperationConstI64.
 	compileConstI64(o *wazeroir.OperationConstI64) error
-	// compileConstI32 adds instruction to push the given constant f32 value onto the stack.
-	// See wasm.OpcodeF32Const
+	// compileConstF32 adds instruction to perform wazeroir.OperationConstF32.
 	compileConstF32(o *wazeroir.OperationConstF32) error
-	// compileConstI32 adds instruction to push the given constant f64 value onto the stack.
-	// See wasm.OpcodeF64Const
+	// compileConstF64 adds instruction to perform wazeroir.OperationConstF64.
 	compileConstF64(o *wazeroir.OperationConstF64) error
 	// compileSignExtend32From8 adds instruction to sign-extends the first 8-bits of 32-bit in as signed 32-bit int.
 	// See wasm.OpcodeI32Extend8S
