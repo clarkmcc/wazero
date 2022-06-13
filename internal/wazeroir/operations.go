@@ -2,6 +2,7 @@ package wazeroir
 
 import "fmt"
 
+// UnsignedInt represents unsigned 32-bit or 64-bit integers.
 type UnsignedInt byte
 
 const (
@@ -9,6 +10,7 @@ const (
 	UnsignedInt64
 )
 
+// String implements fmt.Stringer.
 func (s UnsignedInt) String() (ret string) {
 	switch s {
 	case UnsignedInt32:
@@ -19,6 +21,7 @@ func (s UnsignedInt) String() (ret string) {
 	return
 }
 
+// SignedInt represents signed or unsigned integers.
 type SignedInt byte
 
 const (
@@ -28,6 +31,7 @@ const (
 	SignedUint64
 )
 
+// String implements fmt.Stringer.
 func (s SignedInt) String() (ret string) {
 	switch s {
 	case SignedUint32:
@@ -42,6 +46,7 @@ func (s SignedInt) String() (ret string) {
 	return
 }
 
+// Float represents the scalar double or single precision floating points.
 type Float byte
 
 const (
@@ -49,6 +54,7 @@ const (
 	Float64
 )
 
+// String implements fmt.Stringer.
 func (s Float) String() (ret string) {
 	switch s {
 	case Float32:
@@ -59,6 +65,7 @@ func (s Float) String() (ret string) {
 	return
 }
 
+// UnsignedType is the union of UnsignedInt, Float and V128 vector type.
 type UnsignedType byte
 
 const (
@@ -70,6 +77,7 @@ const (
 	UnsignedTypeUnknown
 )
 
+// String implements fmt.Stringer.
 func (s UnsignedType) String() (ret string) {
 	switch s {
 	case UnsignedTypeI32:
@@ -88,6 +96,7 @@ func (s UnsignedType) String() (ret string) {
 	return
 }
 
+// SignedType is the union of SignedInt and Float types.
 type SignedType byte
 
 const (
@@ -99,6 +108,7 @@ const (
 	SignedTypeFloat64
 )
 
+// String implements fmt.Stringer.
 func (s SignedType) String() (ret string) {
 	switch s {
 	case SignedTypeInt32:
@@ -117,12 +127,17 @@ func (s SignedType) String() (ret string) {
 	return
 }
 
+// Operation is the interface implemented by each individual operation.
 type Operation interface {
+	// Kind returns the kind of the implementation.
 	Kind() OperationKind
+	// TODO String()
 }
 
+// OperationKind is the kind of each implementation of Operation interface.
 type OperationKind uint16
 
+// String implements fmt.Stringer.
 func (o OperationKind) String() (ret string) {
 	switch o {
 	case OperationKindUnreachable:
@@ -408,157 +423,298 @@ func (o OperationKind) String() (ret string) {
 }
 
 const (
+	// OperationKindUnreachable is the kind for OperationUnreachable.
 	OperationKindUnreachable OperationKind = iota
+	// OperationKindLabel is the kind for OperationLabel.
 	OperationKindLabel
+	// OperationKindBr is the kind for OperationBr.
 	OperationKindBr
+	// OperationKindBrIf is the kind for OperationBrIf.
 	OperationKindBrIf
+	// OperationKindBrTable is the kind for OperationBrTable.
 	OperationKindBrTable
+	// OperationKindCall is the kind for OperationCall.
 	OperationKindCall
+	// OperationKindCallIndirect is the kind for OperationCallIndirect.
 	OperationKindCallIndirect
+	// OperationKindDrop is the kind for OperationDrop.
 	OperationKindDrop
+	// OperationKindSelect is the kind for OperationSelect.
 	OperationKindSelect
+	// OperationKindPick is the kind for OperationPick.
 	OperationKindPick
+	// OperationKindSwap is the kind for OperationSwap.
 	OperationKindSwap
+	// OperationKindGlobalGet is the kind for OperationGlobalGet.
 	OperationKindGlobalGet
+	// OperationKindGlobalSet is the kind for OperationGlobalSet.
 	OperationKindGlobalSet
+	// OperationKindLoad is the kind for OperationLoad.
 	OperationKindLoad
+	// OperationKindLoad8 is the kind for OperationLoad8.
 	OperationKindLoad8
+	// OperationKindLoad16 is the kind for OperationLoad16.
 	OperationKindLoad16
+	// OperationKindLoad32 is the kind for OperationLoad32.
 	OperationKindLoad32
+	// OperationKindStore is the kind for OperationStore.
 	OperationKindStore
+	// OperationKindStore8 is the kind for OperationStore8.
 	OperationKindStore8
+	// OperationKindStore16 is the kind for OperationStore16.
 	OperationKindStore16
+	// OperationKindStore32 is the kind for OperationStore32.
 	OperationKindStore32
+	// OperationKindMemorySize is the kind for OperationMemorySize.
 	OperationKindMemorySize
+	// OperationKindMemoryGrow is the kind for OperationMemoryGrow.
 	OperationKindMemoryGrow
+	// OperationKindConstI32 is the kind for OperationConstI32.
 	OperationKindConstI32
+	// OperationKindConstI64 is the kind for OperationConstI64.
 	OperationKindConstI64
+	// OperationKindConstF32 is the kind for OperationConstF32.
 	OperationKindConstF32
+	// OperationKindConstF64 is the kind for OperationConstF64.
 	OperationKindConstF64
+	// OperationKindEq is the kind for OperationEq.
 	OperationKindEq
+	// OperationKindNe is the kind for OperationNe.
 	OperationKindNe
+	// OperationKindEqz is the kind for OperationEqz.
 	OperationKindEqz
+	// OperationKindLt is the kind for OperationLt.
 	OperationKindLt
+	// OperationKindGt is the kind for OperationGt.
 	OperationKindGt
+	// OperationKindLe is the kind for OperationLe.
 	OperationKindLe
+	// OperationKindGe is the kind for OperationGe.
 	OperationKindGe
+	// OperationKindAdd is the kind for OperationAdd.
 	OperationKindAdd
+	// OperationKindSub is the kind for OperationSub.
 	OperationKindSub
+	// OperationKindMul is the kind for OperationMul.
 	OperationKindMul
+	// OperationKindClz is the kind for OperationClz.
 	OperationKindClz
+	// OperationKindCtz is the kind for OperationCtz.
 	OperationKindCtz
+	// OperationKindPopcnt is the kind for OperationPopcnt.
 	OperationKindPopcnt
+	// OperationKindDiv is the kind for OperationDiv.
 	OperationKindDiv
+	// OperationKindRem is the kind for OperationRem.
 	OperationKindRem
+	// OperationKindAnd is the kind for OperationAnd.
 	OperationKindAnd
+	// OperationKindOr is the kind for OperationOr.
 	OperationKindOr
+	// OperationKindXor is the kind for OperationXor.
 	OperationKindXor
+	// OperationKindShl is the kind for OperationShl.
 	OperationKindShl
+	// OperationKindShr is the kind for OperationShr.
 	OperationKindShr
+	// OperationKindRotl is the kind for OperationRotl.
 	OperationKindRotl
+	// OperationKindRotr is the kind for OperationRotr.
 	OperationKindRotr
+	// OperationKindAbs is the kind for OperationAbs.
 	OperationKindAbs
+	// OperationKindNeg is the kind for OperationNeg.
 	OperationKindNeg
+	// OperationKindCeil is the kind for OperationCeil.
 	OperationKindCeil
+	// OperationKindFloor is the kind for OperationFloor.
 	OperationKindFloor
+	// OperationKindTrunc is the kind for OperationTrunc.
 	OperationKindTrunc
+	// OperationKindNearest is the kind for OperationNearest.
 	OperationKindNearest
+	// OperationKindSqrt is the kind for OperationSqrt.
 	OperationKindSqrt
+	// OperationKindMin is the kind for OperationMin.
 	OperationKindMin
+	// OperationKindMax is the kind for OperationMax.
 	OperationKindMax
+	// OperationKindCopysign is the kind for OperationCopysign.
 	OperationKindCopysign
+	// OperationKindI32WrapFromI64 is the kind for OperationI32WrapFromI64.
 	OperationKindI32WrapFromI64
+	// OperationKindITruncFromF is the kind for OperationITruncFromF.
 	OperationKindITruncFromF
+	// OperationKindFConvertFromI is the kind for OperationFConvertFromI.
 	OperationKindFConvertFromI
+	// OperationKindF32DemoteFromF64 is the kind for OperationF32DemoteFromF64.
 	OperationKindF32DemoteFromF64
+	// OperationKindF64PromoteFromF32 is the kind for OperationF64PromoteFromF32.
 	OperationKindF64PromoteFromF32
+	// OperationKindI32ReinterpretFromF32 is the kind for OperationI32ReinterpretFromF32.
 	OperationKindI32ReinterpretFromF32
+	// OperationKindI64ReinterpretFromF64 is the kind for OperationI64ReinterpretFromF64.
 	OperationKindI64ReinterpretFromF64
+	// OperationKindF32ReinterpretFromI32 is the kind for OperationF32ReinterpretFromI32.
 	OperationKindF32ReinterpretFromI32
+	// OperationKindF64ReinterpretFromI64 is the kind for OperationF64ReinterpretFromI64.
 	OperationKindF64ReinterpretFromI64
+	// OperationKindExtend is the kind for OperationExtend.
 	OperationKindExtend
+	// OperationKindSignExtend32From8 is the kind for OperationSignExtend32From8.
 	OperationKindSignExtend32From8
+	// OperationKindSignExtend32From16 is the kind for OperationSignExtend32From16.
 	OperationKindSignExtend32From16
+	// OperationKindSignExtend64From8 is the kind for OperationSignExtend64From8.
 	OperationKindSignExtend64From8
+	// OperationKindSignExtend64From16 is the kind for OperationSignExtend64From16.
 	OperationKindSignExtend64From16
+	// OperationKindSignExtend64From32 is the kind for OperationSignExtend64From32.
 	OperationKindSignExtend64From32
+	// OperationKindMemoryInit is the kind for OperationMemoryInit.
 	OperationKindMemoryInit
+	// OperationKindDataDrop is the kind for OperationDataDrop.
 	OperationKindDataDrop
+	// OperationKindMemoryCopy is the kind for OperationMemoryCopy.
 	OperationKindMemoryCopy
+	// OperationKindMemoryFill is the kind for OperationMemoryFill.
 	OperationKindMemoryFill
+	// OperationKindTableInit is the kind for OperationTableInit.
 	OperationKindTableInit
+	// OperationKindElemDrop is the kind for OperationElemDrop.
 	OperationKindElemDrop
+	// OperationKindTableCopy is the kind for OperationTableCopy.
 	OperationKindTableCopy
+	// OperationKindRefFunc is the kind for OperationRefFunc.
 	OperationKindRefFunc
+	// OperationKindTableGet is the kind for OperationTableGet.
 	OperationKindTableGet
+	// OperationKindTableSet is the kind for OperationTableSet.
 	OperationKindTableSet
+	// OperationKindTableSize is the kind for OperationTableSize.
 	OperationKindTableSize
+	// OperationKindTableGrow is the kind for OperationTableGrow.
 	OperationKindTableGrow
+	// OperationKindTableFill is the kind for OperationTableFill.
 	OperationKindTableFill
 
 	// Vector value related instructions are prefixed by V128.
 
+	// OperationKindV128Const is the kind for OperationV128Const.
 	OperationKindV128Const
+	// OperationKindV128Add is the kind for OperationV128Add.
 	OperationKindV128Add
+	// OperationKindV128Sub is the kind for OperationV128Sub.
 	OperationKindV128Sub
+	// OperationKindV128Load is the kind for OperationV128Load.
 	OperationKindV128Load
+	// OperationKindV128LoadLane is the kind for OperationV128LoadLane.
 	OperationKindV128LoadLane
+	// OperationKindV128Store is the kind for OperationV128Store.
 	OperationKindV128Store
+	// OperationKindV128StoreLane is the kind for OperationV128StoreLane.
 	OperationKindV128StoreLane
+	// OperationKindV128ExtractLane is the kind for OperationV128ExtractLane.
 	OperationKindV128ExtractLane
+	// OperationKindV128ReplaceLane is the kind for OperationV128ReplaceLane.
 	OperationKindV128ReplaceLane
+	// OperationKindV128Splat is the kind for OperationV128Splat.
 	OperationKindV128Splat
+	// OperationKindV128Shuffle is the kind for OperationV128Shuffle.
 	OperationKindV128Shuffle
+	// OperationKindV128Swizzle is the kind for OperationV128Swizzle.
 	OperationKindV128Swizzle
+	// OperationKindV128AnyTrue is the kind for OperationV128AnyTrue.
 	OperationKindV128AnyTrue
+	// OperationKindV128AllTrue is the kind for OperationV128AllTrue.
 	OperationKindV128AllTrue
+	// OperationKindV128BitMask is the kind for OperationV128BitMask.
 	OperationKindV128BitMask
+	// OperationKindV128And is the kind for OperationV128And.
 	OperationKindV128And
+	// OperationKindV128Not is the kind for OperationV128Not.
 	OperationKindV128Not
+	// OperationKindV128Or is the kind for OperationV128Or.
 	OperationKindV128Or
+	// OperationKindV128Xor is the kind for OperationV128Xor.
 	OperationKindV128Xor
+	// OperationKindV128Bitselect is the kind for OperationV128Bitselect.
 	OperationKindV128Bitselect
+	// OperationKindV128AndNot is the kind for OperationV128AndNot.
 	OperationKindV128AndNot
+	// OperationKindV128Shl is the kind for OperationV128Shl.
 	OperationKindV128Shl
+	// OperationKindV128Shr is the kind for OperationV128Shr.
 	OperationKindV128Shr
+	// OperationKindV128Cmp is the kind for OperationV128Cmp.
 	OperationKindV128Cmp
+	// OperationKindV128AddSat is the kind for OperationV128AddSat.
 	OperationKindV128AddSat
+	// OperationKindV128SubSat is the kind for OperationV128SubSat.
 	OperationKindV128SubSat
+	// OperationKindV128Mul is the kind for OperationV128Mul.
 	OperationKindV128Mul
+	// OperationKindV128Div is the kind for OperationV128Div.
 	OperationKindV128Div
+	// OperationKindV128Neg is the kind for OperationV128Neg.
 	OperationKindV128Neg
+	// OperationKindV128Sqrt is the kind for OperationV128Sqrt.
 	OperationKindV128Sqrt
+	// OperationKindV128Abs is the kind for OperationV128Abs.
 	OperationKindV128Abs
+	// OperationKindV128Popcnt is the kind for OperationV128Popcnt.
 	OperationKindV128Popcnt
+	// OperationKindV128Min is the kind for OperationV128Min.
 	OperationKindV128Min
+	// OperationKindV128Max is the kind for OperationV128Max.
 	OperationKindV128Max
+	// OperationKindV128AvgrU is the kind for OperationV128AvgrU.
 	OperationKindV128AvgrU
+	// OperationKindV128Pmin is the kind for OperationV128Pmin.
 	OperationKindV128Pmin
+	// OperationKindV128Pmax is the kind for OperationV128Pmax.
 	OperationKindV128Pmax
+	// OperationKindV128Ceil is the kind for OperationV128Ceil.
 	OperationKindV128Ceil
+	// OperationKindV128Floor is the kind for OperationV128Floor.
 	OperationKindV128Floor
+	// OperationKindV128Trunc is the kind for OperationV128Trunc.
 	OperationKindV128Trunc
+	// OperationKindV128Nearest is the kind for OperationV128Nearest.
 	OperationKindV128Nearest
+	// OperationKindV128Extend is the kind for OperationV128Extend.
 	OperationKindV128Extend
+	// OperationKindV128ExtMul is the kind for OperationV128ExtMul.
 	OperationKindV128ExtMul
+	// OperationKindV128Q15mulrSatS is the kind for OperationV128Q15mulrSatS.
 	OperationKindV128Q15mulrSatS
+	// OperationKindV128ExtAddPairwise is the kind for OperationV128ExtAddPairwise.
 	OperationKindV128ExtAddPairwise
+	// OperationKindV128FloatPromote is the kind for OperationV128FloatPromote.
 	OperationKindV128FloatPromote
+	// OperationKindV128FloatDemote is the kind for OperationV128FloatDemote.
 	OperationKindV128FloatDemote
+	// OperationKindV128FConvertFromI is the kind for OperationV128FConvertFromI.
 	OperationKindV128FConvertFromI
+	// OperationKindV128Dot is the kind for OperationV128Dot.
 	OperationKindV128Dot
+	// OperationKindV128Narrow is the kind for OperationV128Narrow.
 	OperationKindV128Narrow
+	// OperationKindV128ITruncSatFromF is the kind for OperationV128ITruncSatFromF.
 	OperationKindV128ITruncSatFromF
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
 )
 
+// Label is the label of each block in wazeroir where "block" consists of multiple operations,
+// and must end with branching operations (e.g. OperationBr or OperationBrIf).
 type Label struct {
 	FrameID uint32
 	Kind    LabelKind
 }
 
+// String implements fmt.Stringer.
 func (l *Label) String() (ret string) {
 	if l == nil {
 		// Sometimes String() is called on the nil label which is interpreted
@@ -576,11 +732,23 @@ func (l *Label) String() (ret string) {
 	return
 }
 
+// LabelKind is the kind of the label.
 type LabelKind = byte
 
 const (
+	// LabelKindHeader is the header for various blocks. For example, the "then" block of
+	// wasm.OpcodeIfName in Wasm has the label of this kind.
 	LabelKindHeader LabelKind = iota
+	// LabelKindElse is the kind of label for "else" block of wasm.OpcodeIfName in Wasm.
 	LabelKindElse
+	// LabelKindContinuation is the kind of label which is the continuation of blocks.
+	// For example, for wasm text like
+	// (func
+	//   ....
+	//   (if (local.get 0) (then (nop)) (else (nop)))
+	//   return
+	// )
+	// we have the continuation block corresponding to "return" opcode.
 	LabelKindContinuation
 )
 
@@ -592,14 +760,19 @@ func (l *Label) asBranchTargetDrop() *BranchTargetDrop {
 	return &BranchTargetDrop{Target: l.asBranchTarget()}
 }
 
+// BranchTarget represents the branch operation's target such as OperationBr of OperationBrIf.
 type BranchTarget struct {
+	// Label holds the target label. Note that this is nullable and in that case
+	// the branch target is the "return" of the function.
 	Label *Label
 }
 
+// IsReturnTarget returns true if the branch target is the function return, false otherwise.
 func (b *BranchTarget) IsReturnTarget() bool {
 	return b.Label == nil
 }
 
+// String implements fmt.Stringer.
 func (b *BranchTarget) String() (ret string) {
 	if b.IsReturnTarget() {
 		ret = ".return"
@@ -609,11 +782,14 @@ func (b *BranchTarget) String() (ret string) {
 	return
 }
 
+// BranchTargetDrop represents the branch target and the drop range which must be dropped
+// before give the control over to the target label.
 type BranchTargetDrop struct {
 	Target *BranchTarget
 	ToDrop *InclusiveRange
 }
 
+// String implements fmt.Stringer.
 func (b *BranchTargetDrop) String() (ret string) {
 	if b.ToDrop != nil {
 		ret = fmt.Sprintf("%s(drop %d..%d)", b.Target, b.ToDrop.Start, b.ToDrop.End)

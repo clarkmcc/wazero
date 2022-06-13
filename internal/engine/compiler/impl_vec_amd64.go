@@ -2613,6 +2613,7 @@ func (c *amd64Compiler) compileV128ITruncSatFromF(o *wazeroir.OperationV128ITrun
 			}
 
 			// See https://github.com/bytecodealliance/wasmtime/pull/2440
+			// Note: even v8 doesn't seem to have support for this i32x4.tranc_sat_f32x4_u.
 			c.assembler.CompileRegisterToRegister(amd64.PXOR, tmp, tmp)
 			c.assembler.CompileRegisterToRegister(amd64.MAXPS, tmp, vr)
 			c.assembler.CompileRegisterToRegister(amd64.PCMPEQD, tmp, tmp)
